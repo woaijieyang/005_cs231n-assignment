@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "backend": "equivalent GPU; original NumPy full training not claimed",
+  "epochs_completed": 20,
+  "steps_completed": 80040,
+  "train_captions_per_epoch": 400135,
+  "best_epoch": 6,
+  "validation_loss": 24.980624961853028,
+  "validation_sentence_bleu1": 0.2816913090821388,
+  "validation_captions_evaluated": 1000,
+  "elapsed_seconds": 496.67522499999905,
+  "peak_gpu_memory_bytes": 425398784
+}

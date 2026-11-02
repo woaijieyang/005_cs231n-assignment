@@ -1,0 +1,7 @@
+{
+  "best_val": 0.602,
+  "test_accuracy": 0.423,
+  "test_acc": 0.592,
+  "acc_tr": 0.09973469387755102,
+  "acc_val": 0.113
+}

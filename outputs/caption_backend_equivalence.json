@@ -1,0 +1,70 @@
+{
+  "cpu": {
+    "rnn": {
+      "loss_absolute_error": 0.0,
+      "gradient_max_absolute_errors": {
+        "W_embed": 1.3877787807814457e-16,
+        "W_proj": 1.1102230246251565e-16,
+        "b_proj": 3.122502256758253e-17,
+        "W_vocab": 1.1102230246251565e-16,
+        "b_vocab": 1.1102230246251565e-16,
+        "Wx": 3.469446951953614e-18,
+        "Wh": 1.6653345369377348e-16,
+        "b": 1.3877787807814457e-16
+      },
+      "greedy_decoding_equal": true,
+      "adam_three_steps_equal": true,
+      "device": "cpu"
+    },
+    "lstm": {
+      "loss_absolute_error": 0.0,
+      "gradient_max_absolute_errors": {
+        "W_embed": 2.7755575615628914e-17,
+        "W_proj": 4.163336342344337e-17,
+        "b_proj": 1.3877787807814457e-17,
+        "W_vocab": 2.3635607360183997e-17,
+        "b_vocab": 2.220446049250313e-16,
+        "Wx": 4.336808689942018e-19,
+        "Wh": 2.7755575615628914e-17,
+        "b": 5.551115123125783e-17
+      },
+      "greedy_decoding_equal": true,
+      "adam_three_steps_equal": true,
+      "device": "cpu"
+    }
+  },
+  "cuda": {
+    "rnn": {
+      "loss_absolute_error": 8.881784197001252e-16,
+      "gradient_max_absolute_errors": {
+        "W_embed": 1.6653345369377348e-16,
+        "W_proj": 1.6653345369377348e-16,
+        "b_proj": 9.71445146547012e-17,
+        "W_vocab": 8.326672684688674e-17,
+        "b_vocab": 1.1102230246251565e-16,
+        "Wx": 1.734723475976807e-18,
+        "Wh": 1.1102230246251565e-16,
+        "b": 1.942890293094024e-16
+      },
+      "greedy_decoding_equal": true,
+      "adam_three_steps_equal": true,
+      "device": "cuda"
+    },
+    "lstm": {
+      "loss_absolute_error": 0.0,
+      "gradient_max_absolute_errors": {
+        "W_embed": 4.163336342344337e-17,
+        "W_proj": 4.85722573273506e-17,
+        "b_proj": 2.0816681711721685e-17,
+        "W_vocab": 2.7755575615628914e-17,
+        "b_vocab": 2.220446049250313e-16,
+        "Wx": 8.673617379884035e-19,
+        "Wh": 4.163336342344337e-17,
+        "b": 5.551115123125783e-17
+      },
+      "greedy_decoding_equal": true,
+      "adam_three_steps_equal": true,
+      "device": "cuda"
+    }
+  }
+}

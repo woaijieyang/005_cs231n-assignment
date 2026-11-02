@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "starting_checkpoint": "method2 10-epoch validation-best weights",
+  "additional_epochs": 30,
+  "total_epoch_budget": 40,
+  "best_validation_accuracy": 0.905,
+  "test_accuracy": 0.8975,
+  "parameters": 1148874,
+  "additional_training_seconds": 469.8180333000055,
+  "augmentation": [
+    "RandomCrop(32,padding=4)",
+    "RandomHorizontalFlip"
+  ],
+  "optimizer": "AdamW lr=3e-4 weight_decay=5e-4",
+  "schedule": "cosine 30 epochs to 1e-6",
+  "comparison_boundary": "extended budget; not the original 10-epoch challenge comparison"
+}

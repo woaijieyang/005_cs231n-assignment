@@ -1,0 +1,77 @@
+{
+  "adam_three_step_torch_agreement": true,
+  "cnn_autograd_comparison": {
+    "loss_absolute_error": 0.0,
+    "gradients": {
+      "W1": {
+        "max_absolute_error": 5.929230630780102e-21,
+        "gradient_max_absolute_value": 2.3124564246941353e-05
+      },
+      "b1": {
+        "max_absolute_error": 6.776263578034403e-21,
+        "gradient_max_absolute_value": 1.7691505734144406e-05
+      },
+      "W2": {
+        "max_absolute_error": 5.082197683525802e-21,
+        "gradient_max_absolute_value": 1.818826538005125e-05
+      },
+      "b2": {
+        "max_absolute_error": 2.168404344971009e-19,
+        "gradient_max_absolute_value": 0.0012130874933883925
+      },
+      "W3": {
+        "max_absolute_error": 2.710505431213761e-20,
+        "gradient_max_absolute_value": 0.00013006833864768235
+      },
+      "b3": {
+        "max_absolute_error": 2.7755575615628914e-17,
+        "gradient_max_absolute_value": 0.9000000208281729
+      }
+    }
+  },
+  "batchnorm_network_autograd_comparison": {
+    "loss_absolute_error": 4.440892098500626e-16,
+    "gradients": {
+      "W1": {
+        "max_absolute_error": 6.245004513516506e-16,
+        "gradient_max_absolute_value": 1.3021866442414067
+      },
+      "b1": {
+        "max_absolute_error": 3.191891195797325e-16,
+        "gradient_max_absolute_value": 5.551115123125783e-17
+      },
+      "gamma1": {
+        "max_absolute_error": 4.85722573273506e-17,
+        "gradient_max_absolute_value": 0.07470845961533638
+      },
+      "beta1": {
+        "max_absolute_error": 4.5102810375396984e-17,
+        "gradient_max_absolute_value": 0.06528230172774721
+      },
+      "W2": {
+        "max_absolute_error": 2.220446049250313e-16,
+        "gradient_max_absolute_value": 0.38572061662578694
+      },
+      "b2": {
+        "max_absolute_error": 1.249000902703301e-16,
+        "gradient_max_absolute_value": 8.326672684688674e-17
+      },
+      "gamma2": {
+        "max_absolute_error": 2.0816681711721685e-17,
+        "gradient_max_absolute_value": 0.03888635738742416
+      },
+      "beta2": {
+        "max_absolute_error": 6.938893903907228e-18,
+        "gradient_max_absolute_value": 0.05517409700848527
+      },
+      "W3": {
+        "max_absolute_error": 1.6653345369377348e-16,
+        "gradient_max_absolute_value": 0.4018881837714254
+      },
+      "b3": {
+        "max_absolute_error": 2.7755575615628914e-17,
+        "gradient_max_absolute_value": 0.1654217585620001
+      }
+    }
+  }
+}

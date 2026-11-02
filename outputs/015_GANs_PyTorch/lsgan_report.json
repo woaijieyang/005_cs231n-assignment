@@ -1,0 +1,8 @@
+{
+  "epochs_completed": 10,
+  "steps_completed": 3900,
+  "samples_per_epoch": 49920,
+  "elapsed_seconds": 33.820664800005034,
+  "generator_parameters": 1952528,
+  "discriminator_parameters": 267009
+}

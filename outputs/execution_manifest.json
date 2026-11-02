@@ -1,0 +1,92 @@
+{
+  "001_Knn": {
+    "code_sha256": "3f850682b21ec5ad8df8f8a3039bf556fb2365d659f7787f2485c07ee3702b15",
+    "completed_run": "run-20261102-205950",
+    "code_cells": 19,
+    "error_outputs": 0
+  },
+  "002_SVM": {
+    "code_sha256": "f5c8a3cddaed46aec7a0bd31a1d48bbdfc9da919fe300dc8a4dd139cd88b95b1",
+    "completed_run": "run-20261102-204346",
+    "code_cells": 21,
+    "error_outputs": 0
+  },
+  "003_Softmax": {
+    "code_sha256": "e7f76d2244a449305e064fd4e71e5daa95f5b6f62c8c1373dd29a63bfd24574a",
+    "completed_run": "run-20261102-204427",
+    "code_cells": 11,
+    "error_outputs": 0
+  },
+  "004_TwoLayerNet": {
+    "code_sha256": "eea57ee22f02b3ab82babce34d91f3bd77f71c820ce8d15a8c3d65616bf25c1a",
+    "completed_run": "run-20261102-204500",
+    "code_cells": 15,
+    "error_outputs": 0
+  },
+  "005_ImageFeatures": {
+    "code_sha256": "e5d1948fe6202dff59a25399bc3420980ced0a3179c5fdc3cc820876eac4d1ef",
+    "completed_run": "run-20261102-204545",
+    "code_cells": 14,
+    "error_outputs": 0
+  },
+  "006_FullyConnectedNets": {
+    "code_sha256": "920f00e3dc6d0ca6feb9baa3cc9dafc9a0ec666c0b9d1820b00212a8e0f9cb55",
+    "completed_run": "run-20261102-205756",
+    "code_cells": 23,
+    "error_outputs": 0
+  },
+  "007_BatchNormalization": {
+    "code_sha256": "814c7414eb2ceca758e2bbb9985c55742aa1cd3e75af19b7118e43ef2cd2f569",
+    "completed_run": "run-20261102-210341",
+    "code_cells": 13,
+    "error_outputs": 0
+  },
+  "008_Dropout": {
+    "code_sha256": "a61b140163c404325ffc8aa164c5987ad1c43242efa9ea1f3180efe29d48674a",
+    "completed_run": "run-20261102-210432",
+    "code_cells": 9,
+    "error_outputs": 0
+  },
+  "009_ConvolutionalNetworks": {
+    "code_sha256": "2f92bdf80c9129191eb71bed0d6af233acfa84480accb721ec9421dbdd6d2de4",
+    "completed_run": "run-20261102-210448",
+    "code_cells": 22,
+    "error_outputs": 0
+  },
+  "010_PyTorch": {
+    "code_sha256": "15b620de87896b008839bfd173a780d3caa6b3958049aa9b6a666c3b250cde31",
+    "completed_run": "run-20261102-220716",
+    "code_cells": 28,
+    "error_outputs": 0
+  },
+  "011_RNN_Captioning": {
+    "code_sha256": "116908d7c38750348404c5a5c1d292b55a93fcf8e0e55a9d4f1affdc144be58b",
+    "completed_run": "run-20261102-222707",
+    "code_cells": 20,
+    "error_outputs": 0
+  },
+  "012_LSTM_Captioning": {
+    "code_sha256": "677ad3aafa6eb160530828cd2eace95c2501159d9440d8ef6fa850b005b11eb3",
+    "completed_run": "run-20261102-222725",
+    "code_cells": 16,
+    "error_outputs": 0
+  },
+  "013_NetworkVisualization_PyTorch": {
+    "code_sha256": "19187576d8ee04bac52cd03a5a000fe348ef641bd4fec09f12d726bd4a987304",
+    "completed_run": "run-20261102-221942",
+    "code_cells": 17,
+    "error_outputs": 0
+  },
+  "014_StyleTransfer_PyTorch": {
+    "code_sha256": "053916275ef10cd4c788412c361e474fe444f86fb9cc7ed7943da412015ee16a",
+    "completed_run": "run-20261102-213919",
+    "code_cells": 19,
+    "error_outputs": 0
+  },
+  "015_GANs_PyTorch": {
+    "code_sha256": "5812a1d85777734e5e9b60a21a1855e98c4a8ef58525c42c3369bdda28f41780",
+    "completed_run": "run-20261102-214224",
+    "code_cells": 27,
+    "error_outputs": 0
+  }
+}

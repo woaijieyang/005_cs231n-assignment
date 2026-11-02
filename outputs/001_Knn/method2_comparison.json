@@ -1,0 +1,8 @@
+{
+  "original_seconds": 20.467528600012884,
+  "method2_seconds": 2.176749700010987,
+  "speedup": 9.402793807624999,
+  "fold_results_identical": true,
+  "distance_evaluations_original": 100,
+  "distance_evaluations_method2": 10
+}

@@ -1,0 +1,34 @@
+{
+  "cifar10": {
+    "status": "verified_existing",
+    "md5": {
+      "data_batch_1": "c99cafc152244af753f735de768cd75f",
+      "data_batch_2": "d4bba439e000b95fd0a9bffe97cbabec",
+      "data_batch_3": "54ebc095f3ab1f0389bbae665268c751",
+      "data_batch_4": "634d18415352ddfa80567beed471001a",
+      "data_batch_5": "482c414d41f54cd18b22e5b47cb7c3cb",
+      "test_batch": "40351d587109b95175f43aff81a1287e"
+    }
+  },
+  "mnist": {
+    "status": "verified_existing",
+    "md5": {
+      "train-images-idx3-ubyte.gz": "f68b3c2dcbeaaa9fbdd348bbdeb94873",
+      "train-labels-idx1-ubyte.gz": "d53e105ee54ea40749a09fcbcd1e9432",
+      "t10k-images-idx3-ubyte.gz": "9fb629c4189551a2d022fa330f9573f3",
+      "t10k-labels-idx1-ubyte.gz": "ec29112dd5afa0611ce80d1b7f02629c"
+    }
+  },
+  "coco": {
+    "status": "downloaded_once_verified",
+    "train_captions": 400135,
+    "train_features": [
+      82783,
+      512
+    ],
+    "val_captions": 195954
+  },
+  "imagenet_val": {
+    "status": "downloaded_once_verified"
+  }
+}

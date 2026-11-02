@@ -1,0 +1,102 @@
+[
+  {
+    "reference": "<START> the two men are <UNK> for control of the soccer ball <END>",
+    "prediction": "two men are playing frisbee in a field <END>",
+    "bleu1": 0.2920502936517768
+  },
+  {
+    "reference": "<START> several people walking on a platform next to a train <END>",
+    "prediction": "a <UNK> train is traveling down the tracks <END>",
+    "bleu1": 0.18612544500887301
+  },
+  {
+    "reference": "<START> a baby horse has its <UNK> under a big horse <END>",
+    "prediction": "a horse <UNK> a <UNK> <UNK> <UNK> a <UNK> of <UNK> <END>",
+    "bleu1": 0.26959737847033294
+  },
+  {
+    "reference": "<START> a large clock <UNK> the <UNK> side of a building <END>",
+    "prediction": "a large clock tower with a clock on top <END>",
+    "bleu1": 0.4444444444444444
+  },
+  {
+    "reference": "<START> an elephant standing on a lush green field <END>",
+    "prediction": "two elephants are standing in the grass near a <UNK> <END>",
+    "bleu1": 0.2222222222222222
+  },
+  {
+    "reference": "<START> a woman that has <UNK> <UNK> next to a man wearing a <UNK> <END>",
+    "prediction": "a man is sitting on a toilet in a <UNK> <END>",
+    "bleu1": 0.39770636302860873
+  },
+  {
+    "reference": "<START> a plate of food with a <UNK> <UNK> and colorful vegetables <END>",
+    "prediction": "a plate of food with a fork and a fork <END>",
+    "bleu1": 0.7
+  },
+  {
+    "reference": "<START> a person playing soccer is trying to <UNK> the ball <END>",
+    "prediction": "a baseball player holding a bat on a field <END>",
+    "bleu1": 0.11111111111111109
+  },
+  {
+    "reference": "<START> two kids holding tennis rackets while standing in a <UNK> <END>",
+    "prediction": "a woman holding a tennis racquet on a tennis court <END>",
+    "bleu1": 0.3
+  },
+  {
+    "reference": "<START> three women and a man standing next to their surfboards in the sand <END>",
+    "prediction": "a group of people standing on a snow covered ski slope <END>",
+    "bleu1": 0.15159143965003283
+  },
+  {
+    "reference": "<START> a man in a red jacket and a woman <UNK> in a red top <END>",
+    "prediction": "a couple of people standing next to a <UNK> <END>",
+    "bleu1": 0.13381535712974757
+  },
+  {
+    "reference": "<START> a bear sitting on a rock with a river running through it <END>",
+    "prediction": "a black bear is sitting on a rock <END>",
+    "bleu1": 0.45489799478447507
+  },
+  {
+    "reference": "<START> a group of kids sitting on the <UNK> of horses <END>",
+    "prediction": "a woman with a <UNK> <UNK> on a cell phone <END>",
+    "bleu1": 0.22062422564614886
+  },
+  {
+    "reference": "<START> a man riding on a motorcycle <UNK> the woods <END>",
+    "prediction": "a man is riding a motorcycle down the street <END>",
+    "bleu1": 0.6666666666666666
+  },
+  {
+    "reference": "<START> a broccoli <UNK> surrounded by lots of green leaves <END>",
+    "prediction": "a <UNK> of broccoli <UNK> <UNK> <UNK> <UNK> <END>",
+    "bleu1": 0.18887560283756186
+  },
+  {
+    "reference": "<START> two horses perched on top of a <UNK> hill with mountains in the background <END>",
+    "prediction": "a brown and white dog sitting on a wooden bench <END>",
+    "bleu1": 0.1481636441363436
+  },
+  {
+    "reference": "<START> a man stands in a room with a <UNK> box sitting on a chair <END>",
+    "prediction": "a man standing in a living room holding a remote <END>",
+    "bleu1": 0.4444909324090307
+  },
+  {
+    "reference": "<START> a woman is looking a <UNK> stop big green sign <END>",
+    "prediction": "a cat is sitting on top of a laptop computer <END>",
+    "bleu1": 0.3
+  },
+  {
+    "reference": "<START> he is skateboarding down the wall at the skateboard park <END>",
+    "prediction": "a man riding a skateboard down a ramp <END>",
+    "bleu1": 0.19470019576785122
+  },
+  {
+    "reference": "<START> a pizza on a plate with toppings cut into four slices <END>",
+    "prediction": "a pizza with <UNK> <UNK> and <UNK> on it <END>",
+    "bleu1": 0.28973213900471884
+  }
+]

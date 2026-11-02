@@ -1,0 +1,14 @@
+{
+  "epochs_completed": 1,
+  "best_validation_accuracy": 0.576,
+  "parameters": 170906,
+  "elapsed_seconds": 7.158590400009416,
+  "history": [
+    {
+      "epoch": 1,
+      "validation_accuracy": 0.576,
+      "best_validation_accuracy": 0.576,
+      "last_batch_loss": 1.1685049533843994
+    }
+  ]
+}

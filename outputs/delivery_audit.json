@@ -1,0 +1,141 @@
+{
+  "status": "passed",
+  "notebooks": [
+    {
+      "notebook": "01_Assignment1/001_Knn.ipynb",
+      "code_cells": 19,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "01_Assignment1/002_SVM.ipynb",
+      "code_cells": 21,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "01_Assignment1/003_Softmax.ipynb",
+      "code_cells": 11,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "01_Assignment1/004_TwoLayerNet.ipynb",
+      "code_cells": 15,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "01_Assignment1/005_ImageFeatures.ipynb",
+      "code_cells": 14,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "02_Assignment2/006_FullyConnectedNets.ipynb",
+      "code_cells": 23,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "02_Assignment2/007_BatchNormalization.ipynb",
+      "code_cells": 13,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "02_Assignment2/008_Dropout.ipynb",
+      "code_cells": 9,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "02_Assignment2/009_ConvolutionalNetworks.ipynb",
+      "code_cells": 22,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "02_Assignment2/010_PyTorch.ipynb",
+      "code_cells": 28,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "03_Assignment3/011_RNN_Captioning.ipynb",
+      "code_cells": 20,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "03_Assignment3/012_LSTM_Captioning.ipynb",
+      "code_cells": 16,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "03_Assignment3/013_NetworkVisualization_PyTorch.ipynb",
+      "code_cells": 17,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "03_Assignment3/014_StyleTransfer_PyTorch.ipynb",
+      "code_cells": 19,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    },
+    {
+      "notebook": "03_Assignment3/015_GANs_PyTorch.ipynb",
+      "code_cells": 27,
+      "preceding_explanation_missing": [],
+      "unexecuted": [],
+      "error_outputs": 0
+    }
+  ],
+  "total_nonempty_code_cells": 274,
+  "images_verified": 176,
+  "kernel_executable_matches_environment": true,
+  "training_budgets": {
+    "rnn": {
+      "epochs": 20,
+      "updates": 80040,
+      "passed": true
+    },
+    "lstm": {
+      "epochs": 20,
+      "updates": 80040,
+      "passed": true
+    },
+    "vanilla": {
+      "epochs": 10,
+      "updates": 3900
+    },
+    "lsgan": {
+      "epochs": 10,
+      "updates": 3900
+    },
+    "dcgan": {
+      "epochs": 5,
+      "updates": 1950
+    }
+  },
+  "extended_cifar_epochs": 40,
+  "missing_links": [],
+  "failures": [],
+  "evidence_boundary": "This audit checks delivered executed artifacts and recorded complete runs; it does not rerun training."
+}

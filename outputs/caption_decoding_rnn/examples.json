@@ -1,0 +1,246 @@
+{
+  "greedy": [
+    {
+      "caption_index": 43869,
+      "reference": "<START> men riding and walking an elephant down a street <END>",
+      "prediction": "a truck is parked in a parking lot <END>",
+      "bleu1": 0.11031211282307446
+    },
+    {
+      "caption_index": 105008,
+      "reference": "<START> a photo of <UNK> of people on skis and <UNK> and a mountain <UNK> <END>",
+      "prediction": "a group of people skiing down a snowy hill <END>",
+      "bleu1": 0.35588329018524795
+    },
+    {
+      "caption_index": 118669,
+      "reference": "<START> a couple of <UNK> riding on the back of brown horses <END>",
+      "prediction": "two people riding on the back of a motorcycle <END>",
+      "bleu1": 0.596559544542913
+    },
+    {
+      "caption_index": 139145,
+      "reference": "<START> three people in the water together with surfboards <END>",
+      "prediction": "a man <UNK> a surfboard on a wave <END>",
+      "bleu1": 0.0
+    },
+    {
+      "caption_index": 26145,
+      "reference": "<START> flat top oven near <UNK> pot on counter <END>",
+      "prediction": "a bathroom with a toilet and a sink <END>",
+      "bleu1": 0.0
+    },
+    {
+      "caption_index": 20007,
+      "reference": "<START> a bunch of toilets sit on display with green <UNK> <END>",
+      "prediction": "a bathroom with a toilet and a sink <END>",
+      "bleu1": 0.22062422564614886
+    },
+    {
+      "caption_index": 102120,
+      "reference": "<START> two dogs standing in the grass while a <UNK> dog <UNK> up behind them <END>",
+      "prediction": "a <UNK> of sheep are standing in the hay <END>",
+      "bleu1": 0.3032653298563167
+    },
+    {
+      "caption_index": 145910,
+      "reference": "<START> a hand that is holding a doughnut in its <UNK> <END>",
+      "prediction": "a person holding a <UNK> <UNK> with a <UNK> <END>",
+      "bleu1": 0.3032653298563167
+    },
+    {
+      "caption_index": 99684,
+      "reference": "<START> a house eats long grass in the field <END>",
+      "prediction": "a brown cow standing in a field near a tree <END>",
+      "bleu1": 0.3
+    },
+    {
+      "caption_index": 192223,
+      "reference": "<START> a group of people eating a meal at a table <END>",
+      "prediction": "a group of people sitting around a table with food <END>",
+      "bleu1": 0.6
+    },
+    {
+      "caption_index": 177287,
+      "reference": "<START> there is an image of a building on the grass <END>",
+      "prediction": "a group of people standing on top of a lush green field <END>",
+      "bleu1": 0.25
+    },
+    {
+      "caption_index": 69958,
+      "reference": "<START> a group of people with umbrellas walking down the street <END>",
+      "prediction": "a group of people standing in a room <END>",
+      "bleu1": 0.38940039153570244
+    },
+    {
+      "caption_index": 185015,
+      "reference": "<START> a <UNK> face on a cellphone with a body on it <END>",
+      "prediction": "a dog is looking out of a car window <END>",
+      "bleu1": 0.19885318151430437
+    },
+    {
+      "caption_index": 66650,
+      "reference": "<START> a <UNK> couple <UNK> their wedding with their <UNK> <END>",
+      "prediction": "a group of people standing around a table <END>",
+      "bleu1": 0.12500000000000003
+    },
+    {
+      "caption_index": 15955,
+      "reference": "<START> a street light has a street sign at the top of its pole <END>",
+      "prediction": "a street sign on a pole next to a street <END>",
+      "bleu1": 0.4444909324090307
+    },
+    {
+      "caption_index": 183210,
+      "reference": "<START> a baseball player standing on a field holding a bat in his hands <END>",
+      "prediction": "a baseball player <UNK> a ball on a field <END>",
+      "bleu1": 0.4683537499541165
+    },
+    {
+      "caption_index": 13404,
+      "reference": "<START> a black and white cat near a wall on a <UNK> street <END>",
+      "prediction": "a cat sitting on a wooden bench in a park <END>",
+      "bleu1": 0.45241870901797976
+    },
+    {
+      "caption_index": 6695,
+      "reference": "<START> a lady cutting a slice of cake and putting it on a plate <END>",
+      "prediction": "a woman cutting a pizza with a knife <END>",
+      "bleu1": 0.26763071425949514
+    },
+    {
+      "caption_index": 93884,
+      "reference": "<START> a dog with a <UNK> look lying on the floor of a <UNK> <END>",
+      "prediction": "a black cat is sitting on a <UNK> <END>",
+      "bleu1": 0.24202205228903967
+    },
+    {
+      "caption_index": 85712,
+      "reference": "<START> a beautiful woman holding an umbrella over her head <END>",
+      "prediction": "a person in a blue shirt is doing a trick on a skateboard <END>",
+      "bleu1": 0.07692307692307693
+    }
+  ],
+  "selected": [
+    {
+      "caption_index": 43869,
+      "reference": "<START> men riding and walking an elephant down a street <END>",
+      "prediction": "a red truck is parked on the side of the road <END>",
+      "bleu1": 0.0909090909090909
+    },
+    {
+      "caption_index": 105008,
+      "reference": "<START> a photo of <UNK> of people on skis and <UNK> and a mountain <UNK> <END>",
+      "prediction": "a group of people standing on top of a snow covered slope <END>",
+      "bleu1": 0.5
+    },
+    {
+      "caption_index": 118669,
+      "reference": "<START> a couple of <UNK> riding on the back of brown horses <END>",
+      "prediction": "two people riding on the back of a motorcycle <END>",
+      "bleu1": 0.596559544542913
+    },
+    {
+      "caption_index": 139145,
+      "reference": "<START> three people in the water together with surfboards <END>",
+      "prediction": "a group of people riding surfboards on top of a wave <END>",
+      "bleu1": 0.18181818181818182
+    },
+    {
+      "caption_index": 26145,
+      "reference": "<START> flat top oven near <UNK> pot on counter <END>",
+      "prediction": "a bathroom with a sink and a toilet in it <END>",
+      "bleu1": 0.0
+    },
+    {
+      "caption_index": 20007,
+      "reference": "<START> a bunch of toilets sit on display with green <UNK> <END>",
+      "prediction": "a bathroom with a toilet and a sink <END>",
+      "bleu1": 0.22062422564614886
+    },
+    {
+      "caption_index": 102120,
+      "reference": "<START> two dogs standing in the grass while a <UNK> dog <UNK> up behind them <END>",
+      "prediction": "a group of sheep standing next to each other <END>",
+      "bleu1": 0.15922918012750872
+    },
+    {
+      "caption_index": 145910,
+      "reference": "<START> a hand that is holding a doughnut in its <UNK> <END>",
+      "prediction": "a person holding a half eaten doughnut in their hands <END>",
+      "bleu1": 0.5
+    },
+    {
+      "caption_index": 99684,
+      "reference": "<START> a house eats long grass in the field <END>",
+      "prediction": "a brown cow standing in a grassy field <END>",
+      "bleu1": 0.375
+    },
+    {
+      "caption_index": 192223,
+      "reference": "<START> a group of people eating a meal at a table <END>",
+      "prediction": "a group of people sitting at a table with plates of food <END>",
+      "bleu1": 0.5833333333333334
+    },
+    {
+      "caption_index": 177287,
+      "reference": "<START> there is an image of a building on the grass <END>",
+      "prediction": "a group of people standing on top of a lush green field <END>",
+      "bleu1": 0.25
+    },
+    {
+      "caption_index": 69958,
+      "reference": "<START> a group of people with umbrellas walking down the street <END>",
+      "prediction": "a group of people standing in a living room <END>",
+      "bleu1": 0.39770636302860873
+    },
+    {
+      "caption_index": 185015,
+      "reference": "<START> a <UNK> face on a cellphone with a body on it <END>",
+      "prediction": "a cat sitting on top of a car seat <END>",
+      "bleu1": 0.2982797722714565
+    },
+    {
+      "caption_index": 66650,
+      "reference": "<START> a <UNK> couple <UNK> their wedding with their <UNK> <END>",
+      "prediction": "a group of people standing in a room <END>",
+      "bleu1": 0.12500000000000003
+    },
+    {
+      "caption_index": 15955,
+      "reference": "<START> a street light has a street sign at the top of its pole <END>",
+      "prediction": "a street sign on a pole next to a building <END>",
+      "bleu1": 0.37040911034085894
+    },
+    {
+      "caption_index": 183210,
+      "reference": "<START> a baseball player standing on a field holding a bat in his hands <END>",
+      "prediction": "a baseball player swinging a bat on top of a field <END>",
+      "bleu1": 0.6063657586001313
+    },
+    {
+      "caption_index": 13404,
+      "reference": "<START> a black and white cat near a wall on a <UNK> street <END>",
+      "prediction": "a brown and white cat sitting on top of a wooden bench <END>",
+      "bleu1": 0.5
+    },
+    {
+      "caption_index": 6695,
+      "reference": "<START> a lady cutting a slice of cake and putting it on a plate <END>",
+      "prediction": "a woman sitting at a table with a plate of pizza <END>",
+      "bleu1": 0.378978599125082
+    },
+    {
+      "caption_index": 93884,
+      "reference": "<START> a dog with a <UNK> look lying on the floor of a <UNK> <END>",
+      "prediction": "a black cat laying on top of a car seat <END>",
+      "bleu1": 0.36193496721438384
+    },
+    {
+      "caption_index": 85712,
+      "reference": "<START> a beautiful woman holding an umbrella over her head <END>",
+      "prediction": "a person in a blue shirt is doing a trick on a skateboard <END>",
+      "bleu1": 0.07692307692307693
+    }
+  ]
+}

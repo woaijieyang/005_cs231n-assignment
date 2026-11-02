@@ -1,0 +1,94 @@
+{
+  "001_Knn": {
+    "markdown_cells": 28,
+    "code_cells": 19,
+    "images": 3,
+    "error_outputs": 0
+  },
+  "002_SVM": {
+    "markdown_cells": 30,
+    "code_cells": 21,
+    "images": 5,
+    "error_outputs": 0
+  },
+  "003_Softmax": {
+    "markdown_cells": 16,
+    "code_cells": 11,
+    "images": 2,
+    "error_outputs": 0
+  },
+  "004_TwoLayerNet": {
+    "markdown_cells": 28,
+    "code_cells": 15,
+    "images": 4,
+    "error_outputs": 0
+  },
+  "005_ImageFeatures": {
+    "markdown_cells": 24,
+    "code_cells": 14,
+    "images": 55,
+    "error_outputs": 0
+  },
+  "006_FullyConnectedNets": {
+    "markdown_cells": 47,
+    "code_cells": 23,
+    "images": 13,
+    "error_outputs": 0
+  },
+  "007_BatchNormalization": {
+    "markdown_cells": 25,
+    "code_cells": 13,
+    "images": 2,
+    "error_outputs": 0
+  },
+  "008_Dropout": {
+    "markdown_cells": 18,
+    "code_cells": 9,
+    "images": 1,
+    "error_outputs": 0
+  },
+  "009_ConvolutionalNetworks": {
+    "markdown_cells": 43,
+    "code_cells": 22,
+    "images": 3,
+    "error_outputs": 0
+  },
+  "010_PyTorch": {
+    "markdown_cells": 57,
+    "code_cells": 28,
+    "images": 3,
+    "error_outputs": 0
+  },
+  "011_RNN_Captioning": {
+    "markdown_cells": 39,
+    "code_cells": 20,
+    "images": 6,
+    "error_outputs": 0
+  },
+  "012_LSTM_Captioning": {
+    "markdown_cells": 29,
+    "code_cells": 16,
+    "images": 6,
+    "error_outputs": 0
+  },
+  "013_NetworkVisualization_PyTorch": {
+    "markdown_cells": 32,
+    "code_cells": 17,
+    "images": 13,
+    "error_outputs": 0
+  },
+  "014_StyleTransfer_PyTorch": {
+    "markdown_cells": 37,
+    "code_cells": 19,
+    "images": 16,
+    "error_outputs": 0
+  },
+  "015_GANs_PyTorch": {
+    "markdown_cells": 56,
+    "code_cells": 27,
+    "images": 44,
+    "error_outputs": 0
+  },
+  "_source_files": 57,
+  "_markdown_bytes": 955823
+}

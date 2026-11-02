@@ -1,0 +1,14 @@
+{
+  "backend": "PyTorch CUDA, equivalent course equations",
+  "cell_type": "rnn",
+  "epochs": 20,
+  "batch_size": 100,
+  "seed": 231,
+  "wordvec_dim": 256,
+  "hidden_dim": 512,
+  "learning_rate": 0.0005,
+  "dtype": "float32",
+  "optimizer": "course Adam, original epsilon placement",
+  "train_captions": 400135,
+  "validation": "fixed 1000 captions, seed 20261102; mean single-reference sentence BLEU-1"
+}

@@ -1,0 +1,39 @@
+{
+  "runs": [
+    {
+      "run": "run-20261102-213217",
+      "original": {
+        "epochs_completed": 10,
+        "best_validation_accuracy": 0.843,
+        "parameters": 33646666,
+        "elapsed_seconds": 224.7980161000014,
+        "test_accuracy": 0.8258
+      },
+      "method2": {
+        "epochs_completed": 10,
+        "best_validation_accuracy": 0.85,
+        "test_accuracy": 0.837,
+        "parameters": 1148874,
+        "elapsed_seconds": 121.70274069999869
+      }
+    },
+    {
+      "run": "run-20261102-220716",
+      "original": {
+        "epochs_completed": 10,
+        "best_validation_accuracy": 0.835,
+        "parameters": 33646666,
+        "elapsed_seconds": 221.2738556999975,
+        "test_accuracy": 0.8217
+      },
+      "method2": {
+        "epochs_completed": 10,
+        "best_validation_accuracy": 0.851,
+        "test_accuracy": 0.8255,
+        "parameters": 1148874,
+        "elapsed_seconds": 114.87989630000084
+      }
+    }
+  ],
+  "interpretation": "Two executed integration runs with seed 231; GPU determinism was not enforced. Parameter/time benefit appeared in both runs; test accuracy gains were 1.12 and 0.38 percentage points. This is not a multi-seed statistical claim. The 40-epoch extension uses a separate budget."
+}

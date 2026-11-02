@@ -1,0 +1,6 @@
+{
+  "real_equivalence_check_preserves_rng": true,
+  "actual_completed_train_gpu_call_preserves_numpy_python_torch_cuda_rng": true,
+  "loaded_epochs": 20,
+  "no_training_repeated": true
+}

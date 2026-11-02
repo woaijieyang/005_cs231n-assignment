@@ -1,0 +1,37 @@
+[
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "(Iteration 21 / 40) loss: nan"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "C:\\Users\\20240\\Desktop\\workplace\\vibe_coding_workplace\\CS231n-zx-practice\\zx-test\\02_Assignment2\\cs231n\\layers.py:691: RuntimeWarning: invalid value encountered in subtract"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "C:\\Users\\20240\\Desktop\\workplace\\vibe_coding_workplace\\CS231n-zx-practice\\zx-test\\02_Assignment2\\cs231n\\classifiers\\fc_net.py:306: RuntimeWarning: overflow encountered in multiply"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "C:\\Users\\20240\\Desktop\\workplace\\vibe_coding_workplace\\CS231n-zx-practice\\zx-test\\02_Assignment2\\cs231n\\classifiers\\fc_net.py:306: RuntimeWarning: invalid value encountered in scalar multiply"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "C:\\Users\\20240\\Desktop\\workplace\\vibe_coding_workplace\\CS231n-zx-practice\\zx-test\\02_Assignment2\\cs231n\\classifiers\\fc_net.py:316: RuntimeWarning: overflow encountered in multiply"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "C:\\Users\\20240\\Desktop\\workplace\\vibe_coding_workplace\\CS231n-zx-practice\\zx-test\\02_Assignment2\\cs231n\\classifiers\\fc_net.py:316: RuntimeWarning: invalid value encountered in scalar multiply"
+  },
+  {
+    "notebook": "006_FullyConnectedNets.ipynb",
+    "cell": "original-025",
+    "line": "(Iteration 31 / 40) loss: nan"
+  }
+]

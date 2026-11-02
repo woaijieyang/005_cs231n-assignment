@@ -1,0 +1,102 @@
+[
+  {
+    "reference": "<START> the two men are <UNK> for control of the soccer ball <END>",
+    "prediction": "a couple of people that are on a horse <END>",
+    "bleu1": 0.19885318151430437
+  },
+  {
+    "reference": "<START> several people walking on a platform next to a train <END>",
+    "prediction": "a train on a track near a <UNK> <END>",
+    "bleu1": 0.37225089001774603
+  },
+  {
+    "reference": "<START> a baby horse has its <UNK> under a big horse <END>",
+    "prediction": "a brown and black dog is looking at a cow <END>",
+    "bleu1": 0.2
+  },
+  {
+    "reference": "<START> a large clock <UNK> the <UNK> side of a building <END>",
+    "prediction": "a clock is shown on the top of a building <END>",
+    "bleu1": 0.6
+  },
+  {
+    "reference": "<START> an elephant standing on a lush green field <END>",
+    "prediction": "a <UNK> elephant is <UNK> its <UNK> in the <UNK> <END>",
+    "bleu1": 0.23884377019126307
+  },
+  {
+    "reference": "<START> a woman that has <UNK> <UNK> next to a man wearing a <UNK> <END>",
+    "prediction": "a man sitting on a couch with a laptop computer <END>",
+    "bleu1": 0.4
+  },
+  {
+    "reference": "<START> a plate of food with a <UNK> <UNK> and colorful vegetables <END>",
+    "prediction": "a plate with a piece of cake and ice cream <END>",
+    "bleu1": 0.6
+  },
+  {
+    "reference": "<START> a person playing soccer is trying to <UNK> the ball <END>",
+    "prediction": "a man is playing tennis on a court <END>",
+    "bleu1": 0.3309363384692233
+  },
+  {
+    "reference": "<START> two kids holding tennis rackets while standing in a <UNK> <END>",
+    "prediction": "a man and a woman are sitting at a table <END>",
+    "bleu1": 0.10000000000000002
+  },
+  {
+    "reference": "<START> three women and a man standing next to their surfboards in the sand <END>",
+    "prediction": "four people posing for a picture with their <UNK> <END>",
+    "bleu1": 0.13381535712974757
+  },
+  {
+    "reference": "<START> a man in a red jacket and a woman <UNK> in a red top <END>",
+    "prediction": "a <UNK> of a <UNK> <UNK> <UNK> in a <UNK> <END>",
+    "bleu1": 0.1615172143957243
+  },
+  {
+    "reference": "<START> a bear sitting on a rock with a river running through it <END>",
+    "prediction": "a black bear is sitting on a rock <END>",
+    "bleu1": 0.45489799478447507
+  },
+  {
+    "reference": "<START> a group of kids sitting on the <UNK> of horses <END>",
+    "prediction": "a man in a <UNK> <UNK> <UNK> <UNK> <END>",
+    "bleu1": 0.07162619921504752
+  },
+  {
+    "reference": "<START> a man riding on a motorcycle <UNK> the woods <END>",
+    "prediction": "a man is riding a motorcycle on a <UNK> <END>",
+    "bleu1": 0.75
+  },
+  {
+    "reference": "<START> a broccoli <UNK> surrounded by lots of green leaves <END>",
+    "prediction": "a <UNK> of broccoli in a garden with a <UNK> <END>",
+    "bleu1": 0.375
+  },
+  {
+    "reference": "<START> two horses perched on top of a <UNK> hill with mountains in the background <END>",
+    "prediction": "a brown and white horse standing in a field <END>",
+    "bleu1": 0.14248453076221212
+  },
+  {
+    "reference": "<START> a man stands in a room with a <UNK> box sitting on a chair <END>",
+    "prediction": "a man standing in a living room holding a wii controller <END>",
+    "bleu1": 0.4547743189500984
+  },
+  {
+    "reference": "<START> a woman is looking a <UNK> stop big green sign <END>",
+    "prediction": "a man sitting on a couch with a laptop computer <END>",
+    "bleu1": 0.2
+  },
+  {
+    "reference": "<START> he is skateboarding down the wall at the skateboard park <END>",
+    "prediction": "a man riding a skateboard on a ramp <END>",
+    "bleu1": 0.09735009788392564
+  },
+  {
+    "reference": "<START> a pizza on a plate with toppings cut into four slices <END>",
+    "prediction": "a pizza with <UNK> and <UNK> on a plate <END>",
+    "bleu1": 0.48404410457807934
+  }
+]

@@ -1,0 +1,6 @@
+name: cs231n_zx_test
+channels:
+  - defaults
+dependencies:
+  - pip
+  - python=3.11
