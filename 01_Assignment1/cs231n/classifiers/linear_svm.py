@@ -14,9 +14,8 @@ def svm_loss_naive(W, X, y, reg):
 
     返回表达式：(loss, dW)。
     """
-    dW = np.zeros(W.shape)  # 将梯度初始化为 0
+    dW = np.zeros(W.shape)  # 梯度缓冲与 W 同为 (D,C)，后面累加每个样本对各类别列的贡献。
 
-    # 计算损失和梯度
     num_classes = W.shape[1]
     num_train = X.shape[0]
     loss = 0.0
@@ -33,13 +32,10 @@ def svm_loss_naive(W, X, y, reg):
                 dW[:, j] += X[i]
                 dW[:, y[i]] += -X[i]
 
-    # 现在损失是所有训练实例的总和,但我们想要它
-    # 以平均值代替,所以我们用 num_train 来除法。
     # SVM损失函数L=1/N*sum(max(0，X_i·W_i-X_i·W_yi))+reg*|W|^2
     # 取平均值
     loss /= num_train
     dW /= num_train
-    # 在损失中加入正则化。
     # 这里乘以0.5是为了Dw求梯度后为0.5*2*reg*W，方便取整
     loss += 0.5 * reg * np.sum(W * W)
     dW += reg * W
@@ -59,7 +55,7 @@ def svm_loss_vectorized(W, X, y, reg):
     返回表达式：(loss, dW)。
     """
     loss = 0.0
-    dW = np.zeros(W.shape)  # 将梯度初始化为 0
+    dW = np.zeros(W.shape)  # 梯度缓冲与 W 同为 (D,C)，后面累加每个样本对各类别列的贡献。
     num_train = X.shape[0]
 
     scores = X.dot(W)

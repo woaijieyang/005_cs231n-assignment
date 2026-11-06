@@ -14,7 +14,6 @@ def softmax_loss_naive(W, X, y, reg):
 
     返回表达式：(loss, dW)。
     """
-    # 初始化损失和梯度为零。
     loss = 0.0
     dW = np.zeros_like(W)
 
@@ -36,7 +35,6 @@ def softmax_loss_naive(W, X, y, reg):
     # 取均值
     loss /= num_train
     dW /= num_train
-    # 在损失中加入正则化。
     # 正则化
     loss += 0.5 * reg * np.sum(W * W)
     dW += reg * W
@@ -56,15 +54,14 @@ def softmax_loss_vectorized(W, X, y, reg):
 
     返回表达式：(loss, dW)。
     """
-    # 初始化损失和梯度为零。
     loss = 0.0
     dW = np.zeros_like(W)
     num_train = X.shape[0]
     # 计算前进行数学化简
     scores = X.dot(W)
     scores -= np.max(scores, axis=1, keepdims=True)
-    correct_class_score = scores[np.arange(num_train), y].reshape(num_train, 1)
-    exp_sum = np.sum(np.exp(scores), axis=1).reshape(num_train, 1)
+    correct_class_score = scores[np.arange(num_train), y].reshape(num_train, 1)  # 每个样本用自己的标签作列索引，得到 N 个真类得分，而不是选择整批相同的一列。
+    exp_sum = np.sum(np.exp(scores), axis=1).reshape(num_train, 1)  # 对每个样本自己的类别轴求和，再保留列维；不能把不同样本的指数混成一个分母。
     loss += np.sum(np.log(exp_sum) - correct_class_score)
 
     # 对SoftMax的损失函数求导aL/aW
@@ -75,7 +72,6 @@ def softmax_loss_vectorized(W, X, y, reg):
     # 取均值
     loss /= num_train
     dW /= num_train
-    # 在损失中加入正则化。
     # 正则化
     loss += 0.5 * reg * np.sum(W * W)
     dW += reg * W

@@ -25,15 +25,11 @@ def visualize_grid(Xs, ubound=255.0, padding=1):
                 img = Xs[next_idx]
                 low, high = np.min(img), np.max(img)
                 grid[y0:y1, x0:x1] = ubound * (img - low) / (high - low)
-                # grid[y0:y1, x0:x1] = Xs[next_idx]
                 next_idx += 1
             x0 += W + padding
             x1 += W + padding
         y0 += H + padding
         y1 += H + padding
-    # grid_max = np.max(grid)
-    # grid_min = np.min(grid)
-    # grid = ubound * (grid - grid_min) / (grid_max - grid_min)
     return grid
 
 
@@ -49,7 +45,6 @@ def vis_grid(Xs):
             if n < N:
                 G[y * H + y:(y + 1) * H + y, x * W + x:(x + 1) * W + x, :] = Xs[n, :, :, :]
                 n += 1
-    # 常态化为 [0] 1]
     maxg = G.max()
     ming = G.min()
     G = (G - ming) / (maxg - ming)
@@ -66,7 +61,6 @@ def vis_nn(rows):
     for y in range(N):
         for x in range(D):
             G[y * H + y:(y + 1) * H + y, x * W + x:(x + 1) * W + x, :] = rows[y][x]
-    # 常态化为 [0] 1]
     maxg = G.max()
     ming = G.min()
     G = (G - ming) / (maxg - ming)

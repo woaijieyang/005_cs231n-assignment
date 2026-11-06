@@ -47,7 +47,6 @@ def load_coco_data(base_dir=BASE_DIR,
         val_urls = np.asarray([line.strip() for line in f])
     data['val_urls'] = val_urls
 
-    # 也许可以对训练数据进行分镜
     if max_train is not None:
         num_train = data['train_captions'].shape[0]
         mask = np.random.randint(num_train, size=max_train)

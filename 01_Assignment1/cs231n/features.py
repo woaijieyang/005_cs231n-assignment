@@ -13,7 +13,6 @@ def extract_features(imgs, feature_fns, verbose=False):
     if num_images == 0:
         return np.array([])
 
-    # 使用第一个图像来确定特征尺寸
     feature_dims = []
     first_image_features = []
     for feature_fn in feature_fns:
@@ -22,13 +21,10 @@ def extract_features(imgs, feature_fns, verbose=False):
         feature_dims.append(feats.size)
         first_image_features.append(feats)
 
-    # 现在我们知道这些特征的维度,我们可以分配一个单一的
-    # 大阵列将所有特性作为列存储。
     total_feature_dim = sum(feature_dims)
     imgs_features = np.zeros((num_images, total_feature_dim))
     imgs_features[0] = np.hstack(first_image_features).T
 
-    # 提取其它图像的特性 。
     for i in range(1, num_images):
         idx = 0
         for feature_fn, feature_dim in zip(feature_fns, feature_dims):
@@ -57,35 +53,30 @@ def hog_feature(im):
     返回表达式：orientation_histogram.ravel()。
     """
 
-    # 需要时将 rgb 转换为灰度
     if im.ndim == 3:
         image = rgb2gray(im)
     else:
         image = np.at_least_2d(im)
 
-    sx, sy = image.shape  # 图像大小
-    orientations = 9  # 梯度插件数
-    cx, cy = (8, 8)  # 每个单元格的像素
+    sx, sy = image.shape  # 灰度图只剩两条空间轴；之后的差分分别沿列方向和行方向计算。
+    orientations = 9  # 每个空间单元保留九个方向统计，最后的 HOG 维数为 16×9。
+    cx, cy = (8, 8)  # 每个方向直方图汇总一个 8×8 像素单元。
 
     gx = np.zeros(image.shape)
     gy = np.zeros(image.shape)
-    gx[:, :-1] = np.diff(image, n=1, axis=1)  # 在 x 方向上计算梯度
-    gy[:-1, :] = np.diff(image, n=1, axis=0)  # 在 Y 方向上计算梯度
-    grad_mag = np.sqrt(gx ** 2 + gy ** 2)  # 梯度
-    grad_ori = np.arctan2(gy, (gx + 1e-15)) * (180 / np.pi) + 90  # 渐变方向
+    gx[:, :-1] = np.diff(image, n=1, axis=1)  # 比较同一行的相邻列，最右列没有右邻居，保留初始化值。
+    gy[:-1, :] = np.diff(image, n=1, axis=0)  # 比较同一列的相邻行，最下行没有下邻居。
+    grad_mag = np.sqrt(gx ** 2 + gy ** 2)  # 水平和垂直差分构成二维梯度向量，范数是这个像素给方向箱贡献的权重。
+    grad_ori = np.arctan2(gy, (gx + 1e-15)) * (180 / np.pi) + 90  # arctan2 给出方向，乘常数把弧度转成度，再按本实现的偏移映射到后续分箱判断。
 
-    n_cellsx = int(np.floor(sx / cx))  # x 中的单元格数
-    n_cellsy = int(np.floor(sy / cy))  # y 中的单元格数
-    # 计算方向集成图像
+    n_cellsx = int(np.floor(sx / cx))  # 沿第一空间轴统计能完整容纳的单元数；本题 32/8 得 4。
+    n_cellsy = int(np.floor(sy / cy))  # 沿另一空间轴也得到 4 个单元，总计 16 个空间位置。
     orientation_histogram = np.zeros((n_cellsx, n_cellsy, orientations))
     for i in range(orientations):
-        # 为此方向创建新整体图像
-        # 在此范围内隔离方向
         temp_ori = np.where(grad_ori < 180 / orientations * (i + 1),
                             grad_ori, 0)
         temp_ori = np.where(grad_ori >= 180 / orientations * i,
                             temp_ori, 0)
-        # 选择这些方向的大小
         cond2 = temp_ori > 0
         temp_mag = np.where(cond2, grad_mag, 0)
         orientation_histogram[:, :, i] = uniform_filter(temp_mag, size=(cx, cy))[cx // 2::cx, cy // 2::cy].T
@@ -105,7 +96,6 @@ def color_histogram_hsv(im, nbin=10, xmin=0, xmax=255, normalized=True):
     imhist, bin_edges = np.histogram(hsv[:, :, 0], bins=bins, density=normalized)
     imhist = imhist * np.diff(bin_edges)
 
-    # 返回直方图
     return imhist
 
 

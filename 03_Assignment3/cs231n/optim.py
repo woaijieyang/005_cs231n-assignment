@@ -52,7 +52,7 @@ def adam(x, dx, config=None):
     """分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：当前可训练参数，将由一阶、二阶矩共同决定更新步长。
     - config：该参数独立的超参数与历史状态。
 
     返回表达式：(next_x, config)。

@@ -28,16 +28,13 @@ def conv_forward_im2col(x, w, b, conv_param):
     num_filters, _, filter_height, filter_width = w.shape
     stride, pad = conv_param['stride'], conv_param['pad']
 
-    # 检查尺寸
     assert (W + 2 * pad - filter_width) % stride == 0, 'width does not work'
     assert (H + 2 * pad - filter_height) % stride == 0, 'height does not work'
 
-    # 创建输出
     out_height = (H + 2 * pad - filter_height) // stride + 1
     out_width = (W + 2 * pad - filter_width) // stride + 1
     out = np.zeros((N, num_filters, out_height, out_width), dtype=x.dtype)
 
-    # x_cols = im2col_indices(x, w.shape[2], w.shape[3], pad, stride)
     x_cols = im2col_cython(x, w.shape[2], w.shape[3], pad, stride)  # 把每个局部窗口排成一列，一行对应一个通道和核内坐标，便于下一步与展平的卷积核相乘。
     res = w.reshape((w.shape[0], -1)).dot(x_cols) + b.reshape(-1, 1)
 
@@ -54,21 +51,15 @@ def conv_forward_strides(x, w, b, conv_param):
     F, _, HH, WW = w.shape
     stride, pad = conv_param['stride'], conv_param['pad']
 
-    # 检查尺寸
-    # profile (W + 2* pad - WW)%stride === ==== 翻译: 校对: 贾宝玉 校对: 贾宝玉 校对: 贾宝玉 校对: 贾宝玉 校对: 贾宝玉
-    # 断言 (H + 2* 垫 - HH)%stride = = 0. 'hight does not work' (H + 2* pad - HH) 脚步 ======================================================================================================================================================
 
-    # 给输入页条
     p = pad
     x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode='constant')
 
-    # 找出产出的维度
     H += 2 * pad
     W += 2 * pad
     out_h = (H - HH) // stride + 1
     out_w = (W - WW) // stride + 1
 
-    # 通过选择聪明的动作来进行 im2col 操作
     shape = (C, HH, WW, N, out_h, out_w)
     strides = (H * W, W, 1, C * H * W, stride * W, stride)
     strides = x.itemsize * np.array(strides)  # as_strided 的步长单位是字节，因此这里把“跨几个元素”乘以单个元素的字节数。
@@ -77,16 +68,11 @@ def conv_forward_strides(x, w, b, conv_param):
     x_cols = np.ascontiguousarray(x_stride)
     x_cols.shape = (C * HH * WW, N * out_h * out_w)  # 行数是一个窗口的元素数；列数是所有图片的所有输出位置数。矩阵乘积的每列就是一个窗口的滤波结果。
 
-    # 现在,我们所有的进化 是一个巨大的矩阵倍增
     res = w.reshape(F, -1).dot(x_cols) + b.reshape(-1, 1)
 
-    # 重塑输出
     res.shape = (F, N, out_h, out_w)
     out = res.transpose(1, 0, 2, 3)
 
-    # 温柔点,返回一个连续的阵列
-    # 旧版本的弯曲不会这样,所以为了一个公平
-    # 比较我们也不会
     out = np.ascontiguousarray(out)
 
     cache = (x, w, b, conv_param, x_cols)
@@ -134,7 +120,6 @@ def conv_backward_im2col(dout, cache):
     dw = dout_reshaped.dot(x_cols.T).reshape(w.shape)
 
     dx_cols = w.reshape(num_filters, -1).T.dot(dout_reshaped)  # 将输出梯度乘卷积核的转置，先得到每个窗口内部各位置的梯度，随后还需映射回原图。
-    # dx = col2im_indices(dx_cols, x.shape, filter_height, filter_width, pad, stride)
     dx = col2im_cython(dx_cols, x.shape[0], x.shape[1], x.shape[2], x.shape[3],
                        filter_height, filter_width, pad, stride)
 

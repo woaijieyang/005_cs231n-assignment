@@ -16,14 +16,28 @@ class Solver(object):
     """负责分类训练的外层循环。每次从训练集抽一批，调用 model.loss 获得损失和梯度，再用指定更新规则调整参数。每个参数的优化器状态独立保存，验证集用于选择最佳权重。"""
 
     def __init__(self, model, data, **kwargs):
-        """接收模型、数据字典与训练超参数，选择更新规则并初始化历史记录。训练集用于更新权重，验证集保留作检查。"""
+        """接收模型、数据字典与训练超参数，选择更新规则并初始化历史记录。训练集用于更新权重，验证集保留作检查。
+
+        逐项参数：
+        - model：提供 loss 接口的模型实例；训练器从它取得同名参数和梯度。
+        - data：包含训练与验证划分的字典。分类以图片行采样，字幕以字幕行采样后再找图片特征。
+        - update_rule，默认 'sgd'：参数更新函数名，如 sgd、adam；真正执行的规则由这里决定。
+        - optim_config，默认 {}：优化器配置，如 learning_rate。训练器为每组参数创建独立状态，不能共享动量缓存。
+        - lr_decay，默认 1.0：每轮结束时衰减学习率的倍数。
+        - batch_size，默认 100：每次从训练字幕或图像中抽取的行数。
+        - num_epochs，默认 10：训练总轮数。
+        - num_train_samples，默认 1000：计算训练准确率时最多抽取的样本数，不是 SGD 使用的训练集大小。
+        - num_val_samples，默认 None：计算验证准确率时最多抽取的验证样本数；None 表示使用整个指定划分。
+        - checkpoint_name，默认 None：检查点文件名前缀；None 时不从这个 Solver 写检查点。
+        - print_every，默认 10：每隔多少次更新打印损失。
+        - verbose，默认 True：是否显示进度信息。
+        """
         self.model = model
         self.X_train = data['X_train']
         self.y_train = data['y_train']
         self.X_val = data['X_val']
         self.y_val = data['y_val']
 
-        # 解包关键字参数
         self.update_rule = kwargs.pop('update_rule', 'sgd')
         self.optim_config = kwargs.pop('optim_config', {})
         self.lr_decay = kwargs.pop('lr_decay', 1.0)
@@ -36,13 +50,10 @@ class Solver(object):
         self.print_every = kwargs.pop('print_every', 10)
         self.verbose = kwargs.pop('verbose', True)
 
-        # 如果存在额外关键字参数, 则丢出错误
         if len(kwargs) > 0:
             extra = ', '.join('"%s"' % k for k in list(kwargs.keys()))
             raise ValueError('Unrecognized arguments %s' % extra)
 
-        # 确保更新规则存在,然后替换字符串
-        # 带有实际函数的名称
         if not hasattr(optim, self.update_rule):
             raise ValueError('Invalid update_rule "%s"' % self.update_rule)
         self.update_rule = getattr(optim, self.update_rule)
@@ -51,7 +62,6 @@ class Solver(object):
 
     def _reset(self):
         """初始化轮数、最佳记录、损失和准确率历史，为每个参数分别分配优化器配置。该方法由训练器内部调用。"""
-        # 为簿记设置一些变量
         self.epoch = 0
         self.best_val_acc = 0
         self.best_params = {}
@@ -59,7 +69,6 @@ class Solver(object):
         self.train_acc_history = []
         self.val_acc_history = []
 
-        # 为每个参数制作一个 optim_配置的深层副本
         self.optim_configs = {}
         for p in self.model.params:
             d = {k: v for k, v in self.optim_config.items()}
@@ -69,17 +78,14 @@ class Solver(object):
     def _step(self):
         """抽取一批训练样本，调用 model.loss 获取梯度，再用每组参数独立的优化器状态更新。记录本次 batch 损失。
         """
-        # 制作一小批训练数据
         num_train = self.X_train.shape[0]
         batch_mask = np.random.choice(num_train, self.batch_size)
         X_batch = self.X_train[batch_mask]
         y_batch = self.y_train[batch_mask]
 
-        # 计算损失和梯度
         loss, grads = self.model.loss(X_batch, y_batch)
         self.loss_history.append(loss)
 
-        # 执行参数更新
         for p, w in self.model.params.items():
             dw = grads[p]
             config = self.optim_configs[p]
@@ -121,7 +127,6 @@ class Solver(object):
         返回表达式：acc。
         """
 
-        # 也许对数据进行子样本
         N = X.shape[0]
         if num_samples is not None and N > num_samples:
             mask = np.random.choice(N, num_samples)
@@ -129,7 +134,6 @@ class Solver(object):
             X = X[mask]
             y = y[mask]
 
-        # 分批计算预测
         num_batches = N // batch_size
         if N % batch_size != 0:
             num_batches += 1
@@ -157,21 +161,16 @@ class Solver(object):
         for t in range(num_iterations):
             self._step()
 
-            # 可能是印刷训练损失
             if self.verbose and t % self.print_every == 0:
                 print('(Iteration %d / %d) loss: %f' % (
                     t + 1, num_iterations, self.loss_history[-1]))
 
-            # 在每一个时代的末期, 递增一个时代的计数器和衰变
-            # 学习率。
             epoch_end = (t + 1) % iterations_per_epoch == 0
             if epoch_end:
                 self.epoch += 1
                 for k in self.optim_configs:
                     self.optim_configs[k]['learning_rate'] *= self.lr_decay
 
-            # 检查列车和列车的精度在第一次重复,最后一次重复
-            # 重复,在每个时代的末日。
             first_it = (t == 0)
             last_it = (t == num_iterations - 1)
             if first_it or last_it or epoch_end:
@@ -187,12 +186,10 @@ class Solver(object):
                     print('(Epoch %d / %d) train acc: %f; val_acc: %f' % (
                         self.epoch, self.num_epochs, train_acc, val_acc))
 
-                # 追踪最佳模式
                 if val_acc > self.best_val_acc:
                     self.best_val_acc = val_acc
                     self.best_params = {}
                     for k, v in self.model.params.items():
                         self.best_params[k] = v.copy()
 
-        # 在训练结束时,把最好的小马换成模型
         self.model.params = self.best_params

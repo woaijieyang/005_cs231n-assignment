@@ -7,14 +7,13 @@ def affine_forward(x, w, b):
     """输入 x 的首维是样本数 N，其余维展平为 D；计算 (N,D)@(D,M)+(M,) 得到 (N,M)。缓存原 x、w、b，供反向恢复输入形状。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - w：本层的权重。
-    - b：与输出维对齐的偏置。
+    - x：(N,d₁,…,dₖ) 批次；除首轴外展平为 D=d₁×…×dₖ。
+    - w：(D,M) 权重，将每样本 D 个输入变为 M 个输出。
+    - b：(M,) 偏置，沿 N 个样本广播。
 
     返回表达式：(out, cache)。
     """
     out = None
-    # f=w*x+b
     out = x.reshape(x.shape[0], -1).dot(w) + b
     cache = (x, w, b)
     return out, cache
@@ -51,7 +50,6 @@ def relu_forward(x):
     返回表达式：(out, cache)。
     """
     out = None
-    # 执行reLU前传.
     # 使用简单的maxium即可
     out = np.maximum(0, x)
     cache = x
@@ -80,7 +78,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     """输入 (N,D) 特征与 D 维 gamma/beta。训练时按列计算均值、方差并更新滑动统计，测试时只使用滑动统计；输出与输入同形状，cache 用于手写反向。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,D) 批次特征，沿 N 轴分别估计 D 个均值和方差。
     - gamma：可训练的逐特征缩放系数。
     - beta：可训练的逐特征偏移量。
     - bn_param：模式、数值稳定常数和滑动统计等配置。
@@ -103,15 +101,14 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         out = gamma * xhat + beta
         cache = (gamma, x, sample_mean, sample_var, eps, xhat)
         # 基于momentum的指数衰减，从而估计出运行测试集时的均值和方差：
-        running_mean = momentum * running_mean + (1 - momentum) * sample_mean
-        running_var = momentum * running_var + (1 - momentum) * sample_var
+        running_mean = momentum * running_mean + (1 - momentum) * sample_mean  # 滑动均值混合旧统计与本批均值，为推理提供稳定参照；这里的 momentum 与优化器速度无关。
+        running_var = momentum * running_var + (1 - momentum) * sample_var  # 同样更新推理所用的方差。训练输出仍由当前 batch 的 sample_var 计算。
     elif mode == 'test':
         a = gamma / np.sqrt(running_var + eps)
         out = a * x + beta - a * running_mean
     else:
         raise ValueError('Invalid forward batchnorm mode "%s"' % mode)
 
-    # 存储更新的运行意味着返回到 bn_ param
     bn_param['running_mean'] = running_mean
     bn_param['running_var'] = running_var
 
@@ -137,7 +134,7 @@ def batchnorm_backward(dout, cache):
     dgammax = dout  # 便于理解
     dgamma = np.sum(dgammax * x_hat, axis=0)
 
-    dxhat = dgammax * gamma
+    dxhat = dgammax * gamma  # 经过 y=γx̂+β 的乘法节点，把传入的 dy 乘 γ，得到对标准化特征的导数。
     xmu = x - sample_mean
     divar = np.sum(dxhat * xmu, axis=0)
     ivar = 1 / (np.sqrt(sample_var + eps))
@@ -236,16 +233,14 @@ def conv_forward_naive(x, w, b, conv_param):
     """输入 x(N,C,H,W)、卷积核 w(F,C,HH,WW) 和 F 维偏置。先 padding，再按 stride 滑动窗口，逐窗口对通道和核空间求和；输出为 N×F×Hout×Wout。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - w：本层的权重。
-    - b：与输出维对齐的偏置。
+    - x：(N,C,H,W) 输入图像。
+    - w：(F,C,HH,WW) 卷积核，F 决定输出通道数。
+    - b：(F,) 每个输出通道共享一个偏置。
     - conv_param：卷积窗口步幅与边界填充。
 
     返回表达式：(out, cache)。
     """
     out = None
-    # 执行进化前传.
-    # 提示:您可以使用函数 np.pad 进行粘贴.
     stride = conv_param['stride']
     pad = conv_param['pad']
     # F是卷积核数目（即输出的深度），C是通道数（如RGB三通道）
@@ -306,7 +301,6 @@ def conv_backward_naive(dout, cache):
             # dw为dout和x_mask的卷积
             for k in range(F):
                 # 固定i,j,k后dout输出的是N数目的一维向量，需要拓展维度使其和x_mask对应
-                # (N,C,H_core,W_core)*(N,1,1,1)=(N,C,H_core,W_core)
                 dw[k, :, :, :] += np.sum((dout[:, k, i, j])[:, None, None, None] * x_mask, axis=0)
             # dx_pad为dout和w的卷积
             for n in range(N):
@@ -323,7 +317,7 @@ def max_pool_forward_naive(x, pool_param):
     """按每个样本和通道遍历空间窗口，输出窗口最大值。池化不混合通道，也没有权重；cache 保留输入和窗口设置。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C,H,W) 输入，各通道独立池化。
     - pool_param：池化窗口大小与步幅。
 
     返回表达式：(out, cache)。
@@ -347,9 +341,9 @@ def max_pool_forward_naive(x, pool_param):
     return out, cache
 
 
-# 根据缓存找到窗口最大值的位置，将对应输出梯度回传到输入；对重叠窗口累加。相同最大值的分配按实现约定，数值检查使用无并列随机输入。
+# 根据缓存找到窗口最大值的位置，将对应输出梯度回传到输入；当前切片使用赋值，作业采用的不重叠窗口可这样写；重叠窗口在数学上需要累加，而当前函数不支持这个推广。并列最大值按掩码同时接收上游值。
 def max_pool_backward_naive(dout, cache):
-    """根据缓存找到窗口最大值的位置，将对应输出梯度回传到输入；对重叠窗口累加。相同最大值的分配按实现约定，数值检查使用无并列随机输入。
+    """根据缓存找到窗口最大值的位置，将对应输出梯度回传到输入；当前切片使用赋值，作业采用的不重叠窗口可这样写；重叠窗口在数学上需要累加，而当前函数不支持这个推广。并列最大值按掩码同时接收上游值。
 
     参数在本函数中的角色：
     - dout：后续层传回的输出梯度。
@@ -372,6 +366,7 @@ def max_pool_backward_naive(dout, cache):
             # 这里找到最大值的位置，最大值矩阵是二维需要拉伸到四维和x_mask保持一致
             mask = (x_mask == np.max(x_mask, axis=(2, 3))[:, :, None, None])
             # 反向只有mask中最大位置有贡献，其余为0
+            # 这里是赋值，不是 +=。若步幅小于窗口，后写入的窗口会覆盖此前贡献。
             dx[:, :, i * stride:i * stride + pool_height,
             j * stride:j * stride + pool_width] = \
                 dout[:, :, i, j][:, :, None, None] * mask
@@ -383,7 +378,7 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     """把 NCHW 转为 (N·H·W,C)，复用二维 BN 对每个通道归一化，再转回 NCHW。gamma/beta 长度是 C，而不是 H·W。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C,H,W) 特征图，每个通道在 N·H·W 个位置上共同估计统计量。
     - gamma：可训练的逐特征缩放系数。
     - beta：可训练的逐特征偏移量。
     - bn_param：模式、数值稳定常数和滑动统计等配置。
@@ -429,7 +424,7 @@ def svm_loss(x, y):
     """输入得分 (N,C) 与标签 (N,)。错误类别 margin=max(0,s_j−s_y+1)，正确类别清零；返回平均损失及对得分的梯度。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C) 类别得分，不是原始图像；此函数返回对得分的梯度。
     - y：每个样本对应的整数类别标签。
 
     返回表达式：(loss, dx)。
@@ -452,7 +447,7 @@ def softmax_loss(x, y):
     """先逐行减最大 logit，再计算 log-sum-exp 与正确类别交叉熵。得分梯度为 (概率−one_hot)/N，输出标量损失和 (N,C) 梯度。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C) logits；按行做 log-softmax 并求对 logits 的梯度。
     - y：每个样本对应的整数类别标签。
 
     返回表达式：(loss, dx)。

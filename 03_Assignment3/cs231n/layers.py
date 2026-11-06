@@ -6,9 +6,9 @@ def affine_forward(x, w, b):
     """输入 x 的首维是样本数 N，其余维展平为 D；计算 (N,D)@(D,M)+(M,) 得到 (N,M)。缓存原 x、w、b，供反向恢复输入形状。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - w：本层的权重。
-    - b：与输出维对齐的偏置。
+    - x：(N,d₁,…,dₖ) 批次；除首轴外展平为 D=d₁×…×dₖ。
+    - w：(D,M) 权重，将每样本 D 个输入变为 M 个输出。
+    - b：(M,) 偏置，沿 N 个样本广播。
 
     返回表达式：(out, cache)。
     """
@@ -68,7 +68,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     """输入 (N,D) 特征与 D 维 gamma/beta。训练时按列计算均值、方差并更新滑动统计，测试时只使用滑动统计；输出与输入同形状，cache 用于手写反向。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,D) 批次特征，沿 N 轴分别估计 D 个均值和方差。
     - gamma：可训练的逐特征缩放系数。
     - beta：可训练的逐特征偏移量。
     - bn_param：模式、数值稳定常数和滑动统计等配置。
@@ -85,7 +85,6 @@ def batchnorm_forward(x, gamma, beta, bn_param):
 
     out, cache = None, None
     if mode == 'train':
-        # 计算输出
         mu = x.mean(axis=0)
         xc = x - mu
         var = np.mean(xc ** 2, axis=0)
@@ -95,15 +94,12 @@ def batchnorm_forward(x, gamma, beta, bn_param):
 
         cache = (mode, x, gamma, xc, std, xn, out)
 
-        # 更新平均值运行中
         running_mean *= momentum
         running_mean += (1 - momentum) * mu
 
-        # 更新运行中的差异平均值
         running_var *= momentum
         running_var += (1 - momentum) * var
     elif mode == 'test':
-        # 使用运行的平均值和差异实现正常化
         std = np.sqrt(running_var + eps)
         xn = (x - running_mean) / std
         out = gamma * xn + beta
@@ -111,7 +107,6 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     else:
         raise ValueError('Invalid forward batchnorm mode "%s"' % mode)
 
-    # 存储更新的运行意味着返回到 bn_ param
     bn_param['running_mean'] = running_mean
     bn_param['running_var'] = running_var
 
@@ -159,7 +154,7 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     """把 NCHW 转为 (N·H·W,C)，复用二维 BN 对每个通道归一化，再转回 NCHW。gamma/beta 长度是 C，而不是 H·W。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C,H,W) 特征图，每个通道在 N·H·W 个位置上共同估计统计量。
     - gamma：可训练的逐特征缩放系数。
     - beta：可训练的逐特征偏移量。
     - bn_param：模式、数值稳定常数和滑动统计等配置。
@@ -195,7 +190,7 @@ def svm_loss(x, y):
     """输入得分 (N,C) 与标签 (N,)。错误类别 margin=max(0,s_j−s_y+1)，正确类别清零；返回平均损失及对得分的梯度。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C) 类别得分，不是原始图像；此函数返回对得分的梯度。
     - y：每个样本对应的整数类别标签。
 
     返回表达式：(loss, dx)。
@@ -218,7 +213,7 @@ def softmax_loss(x, y):
     """先逐行减最大 logit，再计算 log-sum-exp 与正确类别交叉熵。得分梯度为 (概率−one_hot)/N，输出标量损失和 (N,C) 梯度。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,C) logits；按行做 log-softmax 并求对 logits 的梯度。
     - y：每个样本对应的整数类别标签。
 
     返回表达式：(loss, dx)。

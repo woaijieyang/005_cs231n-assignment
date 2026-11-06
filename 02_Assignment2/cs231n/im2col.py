@@ -3,7 +3,6 @@ import numpy as np
 
 
 def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
-    # 首先找出输出的大小
     N, C, H, W = x_shape
     assert (H + 2 * padding - field_height) % stride == 0
     assert (W + 2 * padding - field_height) % stride == 0
@@ -25,7 +24,6 @@ def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
 
 def im2col_indices(x, field_height, field_width, padding=1, stride=1):
     """用行列索引把每个滑动窗口展开成一列，使卷积前向能通过一次矩阵乘法执行。"""
-    # 输入为零
     p = padding
     x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode='constant')
 

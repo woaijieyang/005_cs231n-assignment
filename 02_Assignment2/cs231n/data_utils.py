@@ -36,7 +36,7 @@ def load_CIFAR_batch(filename):
 # 从共享配置解析实际目录，拼接五个训练批次并读取测试批次。输出原始图像/标签，不在这个函数内混合训练与测试统计。
 def load_CIFAR10(ROOT):
     from study_runtime import data_path
-    ROOT = str(data_path("cifar10"))
+    ROOT = str(data_path("cifar10"))  # 调用者传入的历史目录在此被共享配置替换，实际读取这一处已校验数据。
     """ 读取完整 CIFAR-10 训练和测试数据。"""
     xs = []
     ys = []
@@ -57,11 +57,9 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
                      subtract_mean=True):
     """依次完成划分、用训练均值中心化、HWC→CHW 转换，再把六个数组装入字典。只有训练均值可用于预处理验证与测试数据。
     """
-    # 装入原始 CIFAR- 10 数据
     cifar10_dir = 'cs231n/datasets/cifar-10-batches-py'
     X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
 
-    # 分解数据
     mask = list(range(num_training, num_training + num_validation))
     X_val = X_train[mask]
     y_val = y_train[mask]
@@ -72,19 +70,16 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
     X_test = X_test[mask]
     y_test = y_test[mask]
 
-    # 使数据正常化:减去平均图像
     if subtract_mean:
         mean_image = np.mean(X_train, axis=0)
         X_train -= mean_image  # 训练图的每一行都减去同一训练均值；这里只改变内存中的特征，不修改原始数据文件。
         X_val -= mean_image  # 验证样本必须使用训练阶段估计的均值，否则预处理会使用验证数据自身的信息。
         X_test -= mean_image
 
-    # 切换到频道优先
     X_train = X_train.transpose(0, 3, 1, 2).copy()
     X_val = X_val.transpose(0, 3, 1, 2).copy()
     X_test = X_test.transpose(0, 3, 1, 2).copy()
 
-    # 将数据装入词典
     return {
         'X_train': X_train, 'y_train': y_train,
         'X_val': X_val, 'y_val': y_val,
@@ -94,28 +89,23 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
 
 def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
     """读取类别编号、标注和图片，将类别字符串映射为整数索引，把图像转成 NCHW，并按各自划分返回图像与标签。本函数用于 TinyImageNet；本次 SqueezeNet 可视化读取的是 ImageNet 验证样例。"""
-    # 第一次负载wnids
     with open(os.path.join(path, 'wnids.txt'), 'r') as f:
         wnids = [x.strip() for x in f]
 
-    # 映射到整数标签
     wnid_to_label = {wnid: i for i, wnid in enumerate(wnids)}
 
-    # 使用单词.txt来获取每个类的名称
     with open(os.path.join(path, 'words.txt'), 'r') as f:
         wnid_to_words = dict(line.split('\t') for line in f)
         for wnid, words in wnid_to_words.items():
             wnid_to_words[wnid] = [w.strip() for w in words.split(',')]
     class_names = [wnid_to_words[wnid] for wnid in wnids]
 
-    # 下一个装入训练数据 。
     X_train = []
     y_train = []
     for i, wnid in enumerate(wnids):
         if (i + 1) % 20 == 0:
             print('loading training data for synset %d / %d'
                   % (i + 1, len(wnids)))
-        # 要找出文件名,我们需要打开框文件
         boxes_file = os.path.join(path, 'train', wnid, '%s_boxes.txt' % wnid)
         with open(boxes_file, 'r') as f:
             filenames = [x.split('\t')[0] for x in f]
@@ -128,17 +118,14 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
             img_file = os.path.join(path, 'train', wnid, 'images', img_file)
             img = imread(img_file)
             if img.ndim == 2:
-                # 灰度文件
                 img.shape = (64, 64, 1)
             X_train_block[j] = img.transpose(2, 0, 1)
         X_train.append(X_train_block)
         y_train.append(y_train_block)
 
-    # 我们需要整理所有训练数据
     X_train = np.concatenate(X_train, axis=0)
     y_train = np.concatenate(y_train, axis=0)
 
-    # 下一个负载验证数据
     with open(os.path.join(path, 'val', 'val_annotations.txt'), 'r') as f:
         img_files = []
         val_wnids = []
@@ -156,9 +143,6 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
                 img.shape = (64, 64, 1)
             X_val[i] = img.transpose(2, 0, 1)
 
-    # 下次装入测试图像
-    # 学生不会有测试标签,所以我们需要删除文件
-    # 图像目录。
     img_files = os.listdir(os.path.join(path, 'test', 'images'))
     X_test = np.zeros((len(img_files), 3, 64, 64), dtype=dtype)
     for i, img_file in enumerate(img_files):

@@ -46,7 +46,7 @@ cdef int im2col_cython_inner(np.ndarray[DTYPE_t, ndim=2] cols,
             for xx in range(WW):
                 for ii in range(field_height):
                     for jj in range(field_width):
-                        row = c * field_width * field_height + ii * field_height + jj
+                        row = c * field_width * field_height + ii * field_height + jj  # 核内索引采用 field_height 作行跨度；方形核与宽度一致，矩形核需单独验证。
                         for i in range(N):
                             col = yy * WW * N + xx * N + i
                             cols[row, col] = x_padded[i, c, stride * yy + ii, stride * xx + jj]
@@ -79,7 +79,7 @@ cdef int col2im_cython_inner(np.ndarray[DTYPE_t, ndim=2] cols,
     for c in range(C):
         for ii in range(field_height):
             for jj in range(field_width):
-                row = c * field_width * field_height + ii * field_height + jj
+                row = c * field_width * field_height + ii * field_height + jj  # 核内索引采用 field_height 作行跨度；方形核与宽度一致，矩形核需单独验证。
                 for yy in range(HH):
                     for xx in range(WW):
                         for i in range(N):

@@ -75,7 +75,7 @@ def rmsprop(x, dx, config=None):
     """缓存梯度平方的指数滑动平均，以 sqrt(cache)+eps 调整各坐标步长。不要把本步梯度平方直接代替历史缓存；输出参数及更新后的 cache。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：当前可训练参数，形状与 dx 一致；不是一批输入图像。
     - config：该参数独立的超参数与历史状态。
 
     返回表达式：(next_x, config)。
@@ -98,7 +98,7 @@ def adam(x, dx, config=None):
     """分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：当前可训练参数，将由一阶、二阶矩共同决定更新步长。
     - config：该参数独立的超参数与历史状态。
 
     返回表达式：(next_x, config)。
@@ -113,8 +113,8 @@ def adam(x, dx, config=None):
     config.setdefault('t', 0)
 
     next_x = None
-    config['m'] = config['beta1'] * config['m'] + (1 - config['beta1']) * dx
-    config['v'] = config['beta2'] * config['v'] + (1 - config['beta2']) * (dx ** 2)
+    config['m'] = config['beta1'] * config['m'] + (1 - config['beta1']) * dx  # 一阶矩平滑当前梯度，保留方向信息；它属于当前参数，不能在不同权重间共享。
+    config['v'] = config['beta2'] * config['v'] + (1 - config['beta2']) * (dx ** 2)  # 二阶矩平滑梯度平方，为不同坐标提供不同的步长尺度。
     # m/v 初值为零会造成初期低估；先递增时间步，再分别进行偏差校正。
     config['t'] += 1  # 这是该参数的更新次数。先从零递增，再用它计算一阶、二阶矩的初值偏差校正。
     m_hat = config['m'] / (1 - config['beta1'] ** config['t'])  # 一阶矩初值为零，除以 1−β₁ᵗ 校正前几次更新中均值被压小的效应。

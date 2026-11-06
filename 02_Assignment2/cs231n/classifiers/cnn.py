@@ -15,8 +15,15 @@ class ThreeLayerConvNet(object):
                  dtype=np.float32):
         """按卷积→ReLU→2×2 池化→仿射→ReLU→仿射建立参数。池化后通道和空间尺寸决定第一全连接权重的行数。
 
-        参数在本函数中的角色：
-        - reg：权重正则化强度。
+        逐项参数：
+        - input_dim，默认 (3, 32, 32)：输入到模型的特征宽度，决定第一层与输入相乘的维度。卷积模型中它是 (C,H,W)。
+        - num_filters，默认 32：卷积核数 F，也是第一卷积层输出的通道数。
+        - filter_size，默认 7：卷积核的空间边长，不是输入通道数。
+        - hidden_dim，默认 100：隐藏表示的宽度 H；增加它同时增加计算量和参数量。
+        - num_classes，默认 10：分类目标类别数 C，每个样本返回 C 个 logits。
+        - weight_scale，默认 0.001：随机权重的初始化尺度；不是正则项系数。
+        - reg，默认 0.0：权重 L2 惩罚的系数；课程实现通常使用 ½·reg·ΣW²，导数为 reg·W。
+        - dtype，默认 np.float32：参数数组的数值类型。float64 有利于有限差分，正式训练可用 float32。
         """
         self.params = {}
         self.reg = reg
@@ -30,7 +37,6 @@ class ThreeLayerConvNet(object):
         # 池化后的输出大小
         H_pool = 1 + (H_conv - 2) / 2
         W_pool = 1 + (W_conv - 2) / 2
-        # 凸轮 - relu - 2x2 最大池
         # W1实现卷积
         self.params['W1'] = np.random.normal(0, weight_scale,
                                              size=(num_filters, input_dim[0],
@@ -42,7 +48,6 @@ class ThreeLayerConvNet(object):
                                              size=(num_filters * int(H_pool * W_pool),
                                                    hidden_dim))
         self.params['b2'] = np.zeros(hidden_dim)
-        # affine - Softmax
         # W3实现评分函数
         self.params['W3'] = np.random.normal(0, weight_scale,
                                              size=(hidden_dim, num_classes))
@@ -55,26 +60,23 @@ class ThreeLayerConvNet(object):
     def loss(self, X, y=None):
         """依次调用组合层进行前向，无标签时返回 logits；有标签时计算 Softmax 和仅作用于权重的 L2 正则，逆序返回 W1/b1 到 W3/b3 的梯度。
 
-        参数在本函数中的角色：
-        - X：输入样本矩阵或图像批次。
-        - y：每个样本对应的整数类别标签。
+        逐项参数：
+        - X：按行排列的输入样本，样本轴必须与标签顺序一致。
+        - y，默认 None：与样本行一一对应的类别编号，作为监督目标。
 
-        返回表达式：(loss, grads)；scores。
+        返回给调用方：(loss, grads) 或 scores。
         """
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
         W3, b3 = self.params['W3'], self.params['b3']
 
-        # 向前进方向通过凸起层 。
         filter_size = W1.shape[2]
         conv_param = {'stride': 1, 'pad': (filter_size - 1) // 2}
 
-        # 最大集合层通过球池_参数到前传
         pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
 
         scores = None
         # 前向传递
-        # 凸轮 - relu - 2x2 最大池
         scores, cache1 = conv_relu_pool_forward(X, self.params['W1'],
                                                 self.params['b1'],
                                                 conv_param,
@@ -83,7 +85,6 @@ class ThreeLayerConvNet(object):
         scores, cache2 = affine_relu_forward(scores,
                                              self.params['W2'],
                                              self.params['b2'])
-        # affine - Softmax
         scores, cache3 = affine_forward(scores,
                                         self.params['W3'],
                                         self.params['b3'])

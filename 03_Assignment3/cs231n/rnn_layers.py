@@ -13,17 +13,16 @@ def rnn_step_forward(x, prev_h, Wx, Wh, b):
     """输入 x(N,D)、prev_h(N,H) 及两组权重，计算 next_h=tanh(xWx+prev_hWh+b)。输出隐藏状态和反向缓存，不在单步函数内修改训练参数。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,D) 当前时间步的输入词向量。
     - prev_h：上一时间步的隐藏状态。
-    - Wx：从输入到隐藏状态的权重。
-    - Wh：从前一隐藏状态到当前状态的权重。
-    - b：与输出维对齐的偏置。
+    - Wx：(D,H) 输入到隐藏状态的矩阵。
+    - Wh：(H,H) 循环矩阵。
+    - b：(H,) 隐藏状态偏置。
 
     返回表达式：(next_h, cache)。
     """
     next_h, cache = None, None
     # 前向传播
-    # ht=tanh(Wx@Xt+Wh@ht-1+b)
     next_h = np.tanh(x.dot(Wx) + prev_h.dot(Wh) + b)
 
     cache = (x, prev_h, Wx, Wh, b, next_h)
@@ -43,17 +42,17 @@ def rnn_step_backward(dnext_h, cache):
     dx, dprev_h, dWx, dWh, db = None, None, None, None, None
     x, prev_h, Wx, Wh, b, next_h = cache
     # 反向传播先经过tanh
-    dtanh = dnext_h * (1 - next_h ** 2)  # (N,H)
+    dtanh = dnext_h * (1 - next_h ** 2)  # next_h 已是 tanh 的输出，局部导数可直接写为 1−next_h²，无需重新计算激活。
     # 线性项求和即可，注意形状即可
     db = np.sum(dtanh, axis=0)
 
-    dWx = x.T.dot(dtanh)  # (D,N) * (N,H)
+    dWx = x.T.dot(dtanh)  # (D,N) 乘 (N,H)，沿样本轴聚合得到输入权重梯度。
 
-    dWh = prev_h.T.dot(dtanh)  # (H,N) * (N,H)
+    dWh = prev_h.T.dot(dtanh)  # (H,N) 乘 (N,H)，沿 batch 聚合循环权重的梯度。
 
-    dprev_h = dtanh.dot(Wh.T)  # (N,H) * (H,H)= (N,H)
+    dprev_h = dtanh.dot(Wh.T)  # (N,H) 乘 (H,H)，把本时间步的梯度送回上一隐藏状态。
 
-    dx = dtanh.dot(Wx.T)  # (N,H)*(H,D)=(N,D)
+    dx = dtanh.dot(Wx.T)  # (N,H) 乘 (H,D)，恢复与输入 x 一致的 (N,D)。
     return dx, dprev_h, dWx, dWh, db
 
 
@@ -62,7 +61,7 @@ def rnn_forward(x, h0, Wx, Wh, b):
     """输入完整序列 (N,T,D) 和初始隐藏状态，从 t=0 递推到 T−1。每步共享同一组 Wx、Wh、b，输出所有时刻隐藏状态并按时间保存 cache。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,T,D) 整段输入词向量序列。
     - h0：第一个时间步之前的隐藏状态。
     - Wx：从输入到隐藏状态的权重。
     - Wh：从前一隐藏状态到当前状态的权重。
@@ -101,7 +100,6 @@ def rnn_backward(dh, cache):
     dWx = np.zeros((D, H))
     dWh = np.zeros((H, H))
     db = np.zeros((H,))
-    #
     for t in reversed(range(T)):
         # 这里的dout包含两部分从上面过来的dh，还有从右边过来的之前算出来的dpre_h(对于当前就是dnext_h)
         dnext_h = dh[:, t, :] + dprev_h  # 同一隐藏状态有两条去路：本时刻输出，以及下一时刻的递推。求导时两路梯度相加。
@@ -120,8 +118,8 @@ def word_embedding_forward(x, W):
     """用整数词索引 x(N,T) 从词向量矩阵 W(V,D) 逐位置查表，输出 (N,T,D)。索引本身不可求导，学习对象是被选中的词向量行。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - W：权重矩阵。
+    - x：(N,T) 整数词号矩阵，值是词表行号。
+    - W：(V,D) 词嵌入矩阵；W[x] 产生 (N,T,D) 词向量。
 
     返回表达式：(out, cache)。
     """
@@ -136,7 +134,7 @@ def word_embedding_backward(dout, cache):
     """对重复词索引的初始版本梯度累加到同一 dW 行；使用可处理重复索引的累加方式，避免普通索引赋值丢掉重复贡献。
 
     参数在本函数中的角色：
-    - dout：后续层传回的输出梯度。
+    - dout：(N,T,D) 上游梯度，相同词号的各次贡献要加到同一词表行。
     - cache：本层前向为反向计算保留的中间值。
 
     返回表达式：dW。
@@ -144,7 +142,7 @@ def word_embedding_backward(dout, cache):
     dW = None
     x, W = cache
     N, T, D = dout.shape
-    dW = np.zeros(W.shape)
+    dW = np.zeros(W.shape)  # 梯度缓冲与 W 同为 (D,C)，后面累加每个样本对各类别列的贡献。
     # 词号可能重复。每次出现都要把对应的上游梯度加到同一词向量行，普通高级索引赋值会漏掉重复贡献。
     np.add.at(dW, x.flatten(), dout.reshape(-1, D))  # 按照x的下标给出dout
     return dW
@@ -174,12 +172,12 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
     """把线性输出分为 i/f/o/g 四块；前三块 sigmoid，候选记忆 tanh。通过 c_next=f*c_prev+i*g 和 h_next=o*tanh(c_next) 更新，缓存门值和状态供反向。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,D) 当前词向量。
     - prev_h：上一时间步的隐藏状态。
     - prev_c：上一时间步的细胞状态。
-    - Wx：从输入到隐藏状态的权重。
-    - Wh：从前一隐藏状态到当前状态的权重。
-    - b：与输出维对齐的偏置。
+    - Wx：(D,4H) 输入到四个门的矩阵。
+    - Wh：(H,4H) 前一隐藏状态到四个门的矩阵。
+    - b：(4H,) 四门偏置，列按 i/f/o/g 排列。
 
     返回表达式：(next_h, next_c, cache)。
     """
@@ -222,13 +220,13 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     dprev_c = dnext_out * f
     # 把di,df,do,dg连接起来构成dz
     # 按前向 i/f/o/g 顺序拼回 N×4H，随后才能与 Wx、Wh 的对应列相乘。
-    dz = np.hstack((di, df, do, dg))  # (N, 4H)
+    dz = np.hstack((di, df, do, dg))  # 按照前向 i、f、o、g 的列顺序拼接。顺序即使写错，形状仍可能正确，但梯度会回到错误的门。
     # 线性部分Wx * Xt +Wh * ht-1 + b = z
-    dWx = x.T.dot(dz)  # (D,N) * (N,4H)
-    dWh = prev_h.T.dot(dz)  # (H, N) * (N,4H)
+    dWx = x.T.dot(dz)  # (D,N) 乘 (N,4H)，输出对应 i/f/o/g 四个权重块。
+    dWh = prev_h.T.dot(dz)  # (H,N) 乘 (N,4H)，得到与 LSTM 循环权重相同的 (H,4H) 梯度。
     db = np.sum(dz, axis=0)
-    dprev_h = dz.dot(Wh.T)  # (N,4H) * (4H,H) =(N,H)
-    dx = dz.dot(Wx.T)  # =(N,4H) * (4H,H) =(N,H)
+    dprev_h = dz.dot(Wh.T)  # (N,4H) 乘 (4H,H)，合并四个门对上一隐藏状态的贡献。
+    dx = dz.dot(Wx.T)  # (N,4H) 乘 (4H,D)，把四条门路径合并为对当前词向量的梯度。
 
     return dx, dprev_h, dprev_c, dWx, dWh, db
 
@@ -238,10 +236,10 @@ def lstm_forward(x, h0, Wx, Wh, b):
     """以 h0 和全零 c0 开始逐词更新 LSTM，保存每个时间步的 gate/cache。输出 (N,T,H) 隐藏序列，词表投影在外部统一执行。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
+    - x：(N,T,D) 整段输入词向量序列。
     - h0：第一个时间步之前的隐藏状态。
-    - Wx：从输入到隐藏状态的权重。
-    - Wh：从前一隐藏状态到当前状态的权重。
+    - Wx：(D,4H) 四门输入权重。
+    - Wh：(H,4H) 四门循环权重。
     - b：与输出维对齐的偏置。
 
     返回表达式：(h, cache)。
@@ -304,9 +302,9 @@ def temporal_affine_forward(x, w, b):
     """将 (N,T,D) 展平为 (N·T,D) 后乘共享投影矩阵，恢复 (N,T,M) 并加偏置。所有时间步使用同一个词表映射。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - w：本层的权重。
-    - b：与输出维对齐的偏置。
+    - x：(N,T,H) 隐藏序列。
+    - w：(H,V) 所有时间步共享的词表投影。
+    - b：(V,) 每个词类的偏置。
 
     返回表达式：(out, cache)。
     """
@@ -343,9 +341,9 @@ def temporal_softmax_loss(x, y, mask, verbose=False):
     """计算每个时间位置的交叉熵，用 mask 屏蔽 NULL 填充，再对 batch 数 N 平均。输出对 logits 的梯度也乘同一 mask，因此填充位置不会更新参数。
 
     参数在本函数中的角色：
-    - x：进入该层的输入特征。
-    - y：每个样本对应的整数类别标签。
-    - mask：标记哪些位置参与当前运算的掩码。
+    - x：(N,T,V) logits，每个时刻对 V 个词给分。
+    - y：(N,T) 下一词目标编号，并非整张图的类别标签。
+    - mask：(N,T) 布尔掩码，False 的填充位置不贡献损失和梯度。
 
     返回表达式：(loss, dx)。
     """

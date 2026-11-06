@@ -47,10 +47,10 @@ class TorchCaptioner(nn.Module):
         self.recurrent=layer(worddim,hidden,batch_first=True).to(dtype=self.W_embed.dtype)
         change=gate_permutation if self.cell_type=='lstm' else lambda x:x
         with torch.no_grad():
-            self.recurrent.weight_ih_l0.copy_(torch.from_numpy(change(p['Wx']).T.copy()))
-            self.recurrent.weight_hh_l0.copy_(torch.from_numpy(change(p['Wh']).T.copy()))
+            self.recurrent.weight_ih_l0.copy_(torch.from_numpy(change(p['Wx']).T.copy()))  # 将课程 Wx 按门序重排并转置，匹配框架循环层按输出维排在前面的存储布局。
+            self.recurrent.weight_hh_l0.copy_(torch.from_numpy(change(p['Wh']).T.copy()))  # Wh 使用同一门块交换规则；只交换输入权重而漏掉循环权重会使门的语义不一致。
             self.recurrent.bias_ih_l0.copy_(torch.from_numpy(change(p['b']).copy()))
-            self.recurrent.bias_hh_l0.zero_()
+            self.recurrent.bias_hh_l0.zero_()  # 课程只有一组偏置。将第二组置零并在后面冻结，避免多学一份课程中不存在的偏置。
         self.recurrent.bias_hh_l0.requires_grad_(False)
 
     def forward(self,features,caption_inputs):

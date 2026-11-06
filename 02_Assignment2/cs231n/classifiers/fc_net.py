@@ -11,7 +11,15 @@ class TwoLayerNet(object):
 
     def __init__(self, input_dim=3 * 32 * 32, hidden_dim=100, num_classes=10,
                  weight_scale=1e-3, reg=0.0):
-        """按输入维 D、隐藏维 H 和类别数 C 初始化 W1(D,H)、W2(H,C) 与两个零偏置。这个两层类不启用 BN 或 Dropout。"""
+        """按输入维 D、隐藏维 H 和类别数 C 初始化 W1(D,H)、W2(H,C) 与两个零偏置。这个两层类不启用 BN 或 Dropout。
+
+        逐项参数：
+        - input_dim，默认 3 * 32 * 32：输入到模型的特征宽度，决定第一层与输入相乘的维度。卷积模型中它是 (C,H,W)。
+        - hidden_dim，默认 100：隐藏表示的宽度 H；增加它同时增加计算量和参数量。
+        - num_classes，默认 10：分类目标类别数 C，每个样本返回 C 个 logits。
+        - weight_scale，默认 0.001：随机权重的初始化尺度；不是正则项系数。
+        - reg，默认 0.0：权重 L2 惩罚的系数；课程实现通常使用 ½·reg·ΣW²，导数为 reg·W。
+        """
         self.params = {}
         self.reg = reg
 
@@ -22,7 +30,14 @@ class TwoLayerNet(object):
         self.params['b2'] = np.zeros(num_classes)
 
     def loss(self, X, y=None):
-        """依次计算 affine→ReLU→affine。没有标签时返回 (N,C) 得分；有标签时加上 Softmax 交叉熵和权重正则项，再逆序返回 W1、b1、W2、b2 的梯度。"""
+        """依次计算 affine→ReLU→affine。没有标签时返回 (N,C) 得分；有标签时加上 Softmax 交叉熵和权重正则项，再逆序返回 W1、b1、W2、b2 的梯度。
+
+        逐项参数：
+        - X：按行排列的输入样本，样本轴必须与标签顺序一致。
+        - y，默认 None：与样本行一一对应的类别编号，作为监督目标。
+
+        返回给调用方：(loss, grads) 或 scores。
+        """
         scores = None
         hidden, affine_relu_cache = affine_relu_forward(X, self.params['W1'],
                                                         self.params['b1'])
@@ -30,7 +45,6 @@ class TwoLayerNet(object):
                                           self.params['W2'],
                                           self.params['b2'])
 
-        # 如果Y是无,那么我们就在测试模式中了所以只要回分数
         if y is None:
             return scores
 
@@ -63,8 +77,16 @@ class FullyConnectedNet(object):
                  weight_scale=1e-2, dtype=np.float32, seed=None):
         """根据层宽列表初始化各层 W/b；启用 BN 时还初始化 gamma/beta 和滑动统计，启用 dropout 时保存保留概率与模式。参数维度由相邻层宽确定。
 
-        参数在本函数中的角色：
-        - reg：权重正则化强度。
+        逐项参数：
+        - hidden_dims：各隐藏层宽度的有序列表。例如 [100,100] 表示两个隐藏层，分类输出层另算。
+        - input_dim，默认 3 * 32 * 32：输入到模型的特征宽度，决定第一层与输入相乘的维度。卷积模型中它是 (C,H,W)。
+        - num_classes，默认 10：分类目标类别数 C，每个样本返回 C 个 logits。
+        - dropout，默认 0：0 表示关闭随机失活；启用时用作保留概率，而不是丢弃比例。
+        - use_batchnorm，默认 False：是否在隐藏层仿射与 ReLU 之间加入 BN；开启时增加 gamma、beta 和滑动统计量。
+        - reg，默认 0.0：权重 L2 惩罚的系数；课程实现通常使用 ½·reg·ΣW²，导数为 reg·W。
+        - weight_scale，默认 0.01：随机权重的初始化尺度；不是正则项系数。
+        - dtype，默认 np.float32：参数数组的数值类型。float64 有利于有限差分，正式训练可用 float32。
+        - seed，默认 None：用于可重复的随机抽样，梯度检查中使扰动前后共用同一个掩码。
         """
         self.use_batchnorm = use_batchnorm
         self.use_dropout = dropout > 0
@@ -87,25 +109,16 @@ class FullyConnectedNet(object):
             np.random.normal(0, weight_scale, size=(input_dim, num_classes))
         self.params['b' + str(self.num_layers)] = np.zeros(num_classes)
 
-        # 在使用退出时,我们需要通过一个退出_param字典给每一个
-        # 退出层, 以便该层了解退出概率和模式
-        # (train /test) 。您可以通过同样的退职程序到每个退职层次 。
         self.dropout_param = {}
         if self.use_dropout:
             self.dropout_param = {'mode': 'train', 'p': dropout}
             if seed is not None:
                 self.dropout_param['seed'] = seed
 
-        # 随着批量正常化,我们需要跟踪运行手段和
-        # 差异,所以我们需要通过一个特殊的 bn_ param 对象到每批
-        # 常态层。您应该通过 self. bn_ params [0]到前方 。
-        # 中,自.bn_params [1]到前端
-        # 通过第二批正常化层等.
         self.bn_params = []
         if self.use_batchnorm:
             self.bn_params = [{'mode': 'train'} for i in range(self.num_layers - 1)]
 
-        # 将所有参数投放到正确的数据类型
         for k, v in self.params.items():
             self.params[k] = v.astype(dtype)
 
@@ -113,17 +126,15 @@ class FullyConnectedNet(object):
     def loss(self, X, y=None):
         """按标签是否存在切换 train/test 模式；隐藏层依次 affine、可选 BN、ReLU、可选 dropout，最后输出 logits。训练时计算 Softmax/L2，再逆序通过 cache 返回参数梯度。
 
-        参数在本函数中的角色：
-        - X：输入样本矩阵或图像批次。
-        - y：每个样本对应的整数类别标签。
+        逐项参数：
+        - X：按行排列的输入样本，样本轴必须与标签顺序一致。
+        - y，默认 None：与样本行一一对应的类别编号，作为监督目标。
 
-        返回表达式：(loss, grads)；scores。
+        返回给调用方：(loss, grads) 或 scores。
         """
         X = X.astype(self.dtype)
         mode = 'test' if y is None else 'train'
 
-        # 设置列车/测试模式,用于批量停放和退出停放
-        # 在训练和测试期间行为不同。
         if self.use_dropout:
             self.dropout_param['mode'] = mode
         if self.use_batchnorm:
@@ -157,7 +168,6 @@ class FullyConnectedNet(object):
                            self.params['W' + str(self.num_layers)],
                            self.params['b' + str(self.num_layers)])
 
-        # 如果测试模式提前返回
         if mode == 'test':
             return scores
 
