@@ -8,7 +8,7 @@ from study_runtime import imread
 import platform
 
 
-# 中文数据流：根据 Python 版本选择 pickle 解码；旧 CIFAR 文件的字符串以 latin1 兼容读取。仅加载明确来源的课程数据，不对任意文件作反序列化。
+# 根据 Python 版本选择 pickle 解码；旧 CIFAR 文件的字符串以 latin1 兼容读取。仅加载明确来源的课程数据，不对任意文件作反序列化。
 def load_pickle(f):
     version = platform.python_version_tuple()
     if version[0] == '2':
@@ -18,9 +18,12 @@ def load_pickle(f):
     raise ValueError("invalid python version: {}".format(version))
 
 
-# 中文数据流：读取一个课程 pickle 批次，将扁平像素转成 (10000,32,32,3) HWC 浮点数组，标签转一维整数数组。原文件只读，所有预处理在内存中完成。
+# 读取一个课程 pickle 批次，将扁平像素转成 (10000,32,32,3) HWC 浮点数组，标签转一维整数数组。原文件只读，所有预处理在内存中完成。
 def load_CIFAR_batch(filename):
-    """ load single batch of cifar """
+    """读取一个课程 pickle 批次，将扁平像素转成 (10000,32,32,3) HWC 浮点数组，标签转一维整数数组。原文件只读，所有预处理在内存中完成。
+
+    返回表达式：(X, Y)。
+    """
     with open(filename, 'rb') as f:
         datadict = load_pickle(f)
         X = datadict['data']
@@ -30,11 +33,11 @@ def load_CIFAR_batch(filename):
         return X, Y
 
 
-# 中文数据流：从共享配置解析实际目录，拼接五个训练批次并读取测试批次。输出原始图像/标签，不在这个函数内混合训练与测试统计。
+# 从共享配置解析实际目录，拼接五个训练批次并读取测试批次。输出原始图像/标签，不在这个函数内混合训练与测试统计。
 def load_CIFAR10(ROOT):
     from study_runtime import data_path
     ROOT = str(data_path("cifar10"))
-    """ load all of cifar """
+    """ 读取完整 CIFAR-10 训练和测试数据。"""
     xs = []
     ys = []
     for b in range(1, 6):
@@ -49,19 +52,16 @@ def load_CIFAR10(ROOT):
     return Xtr, Ytr, Xte, Yte
 
 
-# 中文数据流：依次完成划分、用训练均值中心化、HWC→CHW 转换，再把六个数组装入字典。只有训练均值可用于预处理验证与测试数据。
+# 依次完成划分、用训练均值中心化、HWC→CHW 转换，再把六个数组装入字典。只有训练均值可用于预处理验证与测试数据。
 def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
                      subtract_mean=True):
+    """依次完成划分、用训练均值中心化、HWC→CHW 转换，再把六个数组装入字典。只有训练均值可用于预处理验证与测试数据。
     """
-    Load the CIFAR-10 dataset from disk and perform preprocessing to prepare
-    it for classifiers. These are the same steps as we used for the SVM, but
-    condensed to a single function.
-    """
-    # Load the raw CIFAR-10 data
+    # 装入原始 CIFAR- 10 数据
     cifar10_dir = 'cs231n/datasets/cifar-10-batches-py'
     X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
 
-    # Subsample the data
+    # 分解数据
     mask = list(range(num_training, num_training + num_validation))
     X_val = X_train[mask]
     y_val = y_train[mask]
@@ -72,19 +72,19 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
     X_test = X_test[mask]
     y_test = y_test[mask]
 
-    # Normalize the data: subtract the mean image
+    # 使数据正常化:减去平均图像
     if subtract_mean:
         mean_image = np.mean(X_train, axis=0)
-        X_train -= mean_image
-        X_val -= mean_image
+        X_train -= mean_image  # 训练图的每一行都减去同一训练均值；这里只改变内存中的特征，不修改原始数据文件。
+        X_val -= mean_image  # 验证样本必须使用训练阶段估计的均值，否则预处理会使用验证数据自身的信息。
         X_test -= mean_image
 
-    # Transpose so that channels come first
+    # 切换到频道优先
     X_train = X_train.transpose(0, 3, 1, 2).copy()
     X_val = X_val.transpose(0, 3, 1, 2).copy()
     X_test = X_test.transpose(0, 3, 1, 2).copy()
 
-    # Package data into a dictionary
+    # 将数据装入词典
     return {
         'X_train': X_train, 'y_train': y_train,
         'X_val': X_val, 'y_val': y_val,
@@ -93,50 +93,29 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
 
 
 def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
-    """
-    Load TinyImageNet. Each of TinyImageNet-100-A, TinyImageNet-100-B, and
-    TinyImageNet-200 have the same directory structure, so this can be used
-    to load any of them.
-
-    Inputs:
-    - path: String giving path to the directory to load.
-    - dtype: numpy datatype used to load the data.
-    - subtract_mean: Whether to subtract the mean training image.
-
-    Returns: A dictionary with the following entries:
-    - class_names: A list where class_names[i] is a list of strings giving the
-      WordNet names for class i in the loaded dataset.
-    - X_train: (N_tr, 3, 64, 64) array of training images
-    - y_train: (N_tr,) array of training labels
-    - X_val: (N_val, 3, 64, 64) array of validation images
-    - y_val: (N_val,) array of validation labels
-    - X_test: (N_test, 3, 64, 64) array of testing images.
-    - y_test: (N_test,) array of test labels; if test labels are not available
-      (such as in student code) then y_test will be None.
-    - mean_image: (3, 64, 64) array giving mean training image
-    """
-    # First load wnids
+    """读取类别编号、标注和图片，将类别字符串映射为整数索引，把图像转成 NCHW，并按各自划分返回图像与标签。本函数用于 TinyImageNet；本次 SqueezeNet 可视化读取的是 ImageNet 验证样例。"""
+    # 第一次负载wnids
     with open(os.path.join(path, 'wnids.txt'), 'r') as f:
         wnids = [x.strip() for x in f]
 
-    # Map wnids to integer labels
+    # 映射到整数标签
     wnid_to_label = {wnid: i for i, wnid in enumerate(wnids)}
 
-    # Use words.txt to get names for each class
+    # 使用单词.txt来获取每个类的名称
     with open(os.path.join(path, 'words.txt'), 'r') as f:
         wnid_to_words = dict(line.split('\t') for line in f)
         for wnid, words in wnid_to_words.items():
             wnid_to_words[wnid] = [w.strip() for w in words.split(',')]
     class_names = [wnid_to_words[wnid] for wnid in wnids]
 
-    # Next load training data.
+    # 下一个装入训练数据 。
     X_train = []
     y_train = []
     for i, wnid in enumerate(wnids):
         if (i + 1) % 20 == 0:
             print('loading training data for synset %d / %d'
                   % (i + 1, len(wnids)))
-        # To figure out the filenames we need to open the boxes file
+        # 要找出文件名,我们需要打开框文件
         boxes_file = os.path.join(path, 'train', wnid, '%s_boxes.txt' % wnid)
         with open(boxes_file, 'r') as f:
             filenames = [x.split('\t')[0] for x in f]
@@ -149,17 +128,17 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
             img_file = os.path.join(path, 'train', wnid, 'images', img_file)
             img = imread(img_file)
             if img.ndim == 2:
-                ## grayscale file
+                # 灰度文件
                 img.shape = (64, 64, 1)
             X_train_block[j] = img.transpose(2, 0, 1)
         X_train.append(X_train_block)
         y_train.append(y_train_block)
 
-    # We need to concatenate all training data
+    # 我们需要整理所有训练数据
     X_train = np.concatenate(X_train, axis=0)
     y_train = np.concatenate(y_train, axis=0)
 
-    # Next load validation data
+    # 下一个负载验证数据
     with open(os.path.join(path, 'val', 'val_annotations.txt'), 'r') as f:
         img_files = []
         val_wnids = []
@@ -177,9 +156,9 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
                 img.shape = (64, 64, 1)
             X_val[i] = img.transpose(2, 0, 1)
 
-    # Next load test images
-    # Students won't have test labels, so we need to iterate over files in the
-    # images directory.
+    # 下次装入测试图像
+    # 学生不会有测试标签,所以我们需要删除文件
+    # 图像目录。
     img_files = os.listdir(os.path.join(path, 'test', 'images'))
     X_test = np.zeros((len(img_files), 3, 64, 64), dtype=dtype)
     for i, img_file in enumerate(img_files):
@@ -203,8 +182,8 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
 
     mean_image = X_train.mean(axis=0)
     if subtract_mean:
-        X_train -= mean_image[None]
-        X_val -= mean_image[None]
+        X_train -= mean_image[None]  # 训练图的每一行都减去同一训练均值；这里只改变内存中的特征，不修改原始数据文件。
+        X_val -= mean_image[None]  # 验证样本必须使用训练阶段估计的均值，否则预处理会使用验证数据自身的信息。
         X_test -= mean_image[None]
 
     return {
@@ -221,18 +200,7 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
 
 
 def load_models(models_dir):
-    """
-    Load saved models from disk. This will attempt to unpickle all files in a
-    directory; any files that give errors on unpickling (such as README.txt)
-    will be skipped.
-
-    Inputs:
-    - models_dir: String giving the path to a directory containing model files.
-      Each model file is a pickled dictionary with a 'model' field.
-
-    Returns:
-    A dictionary mapping model file names to models.
-    """
+    """从指定目录逐文件读取保存的模型对象，按文件名建立字典。只应对已知来源的模型文件使用 pickle。"""
     models = {}
     for model_file in os.listdir(models_dir):
         with open(os.path.join(models_dir, model_file), 'rb') as f:
@@ -244,16 +212,7 @@ def load_models(models_dir):
 
 
 def load_imagenet_val(num=None):
-    """Load a handful of validation images from ImageNet.
-
-    Inputs:
-    - num: Number of images to load (max of 25)
-
-    Returns:
-    - X: numpy array with shape [num, 224, 224, 3]
-    - y: numpy array of integer image labels, shape [num]
-    - class_names: dict mapping integer label to class name
-    """
+    """从指定课程 NPZ 文件读取图像 X、标签 y 以及类别名映射。提供 num 时从前面取指定数量的样本，三者供显著图实验使用。"""
     imagenet_fn = str(__import__('study_runtime').data_path('imagenet_val'))
     if not os.path.isfile(imagenet_fn):
         print('file %s not found' % imagenet_fn)

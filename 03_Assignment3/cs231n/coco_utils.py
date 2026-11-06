@@ -7,7 +7,7 @@ from study_runtime import data_path
 BASE_DIR = str(data_path('coco'))
 
 
-# 中文数据流：读取字幕 HDF5、图像特征、词表和 URL，按 pca_features 选择 512 维或原特征。max_train 只抽样训练字幕及其图像索引；图像特征仍通过索引共享。
+# 读取字幕 HDF5、图像特征、词表和 URL，按 pca_features 选择 512 维或原特征。max_train 只抽样训练字幕及其图像索引；图像特征仍通过索引共享。
 def load_coco_data(base_dir=BASE_DIR,
                    max_train=None,
                    pca_features=True):
@@ -47,7 +47,7 @@ def load_coco_data(base_dir=BASE_DIR,
         val_urls = np.asarray([line.strip() for line in f])
     data['val_urls'] = val_urls
 
-    # Maybe subsample the training data
+    # 也许可以对训练数据进行分镜
     if max_train is not None:
         num_train = data['train_captions'].shape[0]
         mask = np.random.randint(num_train, size=max_train)
@@ -57,7 +57,7 @@ def load_coco_data(base_dir=BASE_DIR,
     return data
 
 
-# 中文数据流：把一维或二维 token 数组转成字符串，忽略 NULL 并在 END 处停止显示。该函数只负责解码文本，不计算 BLEU，也不修改模型生成的 token。
+# 把一维或二维 token 数组转成字符串，忽略 NULL 并在 END 处停止显示。该函数只负责解码文本，不计算 BLEU，也不修改模型生成的 token。
 def decode_captions(captions, idx_to_word):
     singleton = False
     if captions.ndim == 1:
@@ -79,7 +79,7 @@ def decode_captions(captions, idx_to_word):
     return decoded
 
 
-# 中文数据流：从指定 split 的字幕行采样，取出对应字幕，再用图像索引取得特征与 URL。一个 batch 中可能出现同图的不同字幕或重复抽样，这是原 Solver 的采样协议。
+# 从指定 split 的字幕行采样，取出对应字幕，再用图像索引取得特征与 URL。一个 batch 中可能出现同图的不同字幕或重复抽样，这是原 Solver 的采样协议。
 def sample_coco_minibatch(data, batch_size=100, split='train'):
     split_size = data['%s_captions' % split].shape[0]
     mask = np.random.choice(split_size, batch_size)

@@ -2,43 +2,48 @@ import numpy as np
 from random import randrange
 
 
-# 中文数据流：逐坐标计算中心差分 [f(x+h)−f(x−h)]/(2h)，每次恢复被扰动元素。适用于标量输出；步长过大会跨越非光滑点，过小会产生消去误差。
+# 逐坐标计算中心差分 [f(x+h)−f(x−h)]/(2h)，每次恢复被扰动元素。适用于标量输出；步长过大会跨越非光滑点，过小会产生消去误差。
 def eval_numerical_gradient(f, x, verbose=True, h=0.00001):
-    """
-    a naive implementation of numerical gradient of f at x
-    - f should be a function that takes a single argument
-    - x is the point (numpy array) to evaluate the gradient at
+    """逐坐标计算中心差分 [f(x+h)−f(x−h)]/(2h)，每次恢复被扰动元素。适用于标量输出；步长过大会跨越非光滑点，过小会产生消去误差。
+
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+
+    返回表达式：grad。
     """
 
-    fx = f(x)  # evaluate function value at original point
+    fx = f(x)  # 在原点评价函数值
     grad = np.zeros_like(x)
-    # iterate over all indexes in x
+    # 在所有索引上以 x 表示
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
 
-        # evaluate function at x+h
+        # 在 x+h 时评价函数
         ix = it.multi_index
         oldval = x[ix]
-        x[ix] = oldval + h  # increment by h
-        fxph = f(x)  # evalute f(x + h)
+        x[ix] = oldval + h  # 递增(h)
+        fxph = f(x)  # 数值 f(x + h)
         x[ix] = oldval - h
-        fxmh = f(x)  # evaluate f(x - h)
+        fxmh = f(x)  # 评估f(x-h)
         x[ix] = oldval  # restore
 
-        # compute the partial derivative with centered formula
-        grad[ix] = (fxph - fxmh) / (2 * h)  # the slope
+        # 用中心公式计算部分衍生物
+        grad[ix] = (fxph - fxmh) / (2 * h)  # 倾斜
         if verbose:
             print(ix, grad[ix])
-        it.iternext()  # step to next dimension
+        it.iternext()  # 步骤到下一个维度
 
     return grad
 
 
-# 中文数据流：当 f 返回数组时，用初始版本 df 加权输出差分，得到链式法则对应的标量方向导数。每次扰动后恢复 x，返回与 x 同形状的数值梯度。
+# 当 f 返回数组时，用初始版本 df 加权输出差分，得到链式法则对应的标量方向导数。每次扰动后恢复 x，返回与 x 同形状的数值梯度。
 def eval_numerical_gradient_array(f, x, df, h=1e-5):
-    """
-    Evaluate a numeric gradient for a function that accepts a numpy
-    array and returns a numpy array.
+    """当 f 返回数组时，用初始版本 df 加权输出差分，得到链式法则对应的标量方向导数。每次扰动后恢复 x，返回与 x 同形状的数值梯度。
+
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+
+    返回表达式：grad。
     """
     grad = np.zeros_like(x)
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
@@ -58,23 +63,7 @@ def eval_numerical_gradient_array(f, x, df, h=1e-5):
 
 
 def eval_numerical_gradient_blobs(f, inputs, output, h=1e-5):
-    """
-    Compute numeric gradients for a function that operates on input
-    and output blobs.
-
-    We assume that f accepts several input blobs as arguments, followed by a blob
-    into which outputs will be written. For example, f might be called like this:
-
-    f(x, w, out)
-
-    where x and w are input Blobs, and the result of f will be written to out.
-
-    Inputs:
-    - f: function
-    - inputs: tuple of input blobs
-    - output: output blob
-    - h: step size
-    """
+    """逐坐标扰动输入对象中的数组，两次执行前向计算，将输出变化与上游梯度作内积，得到每个输入的数值梯度。"""
     numeric_diffs = []
     for input_blob in inputs:
         diff = np.zeros_like(input_blob.diffs)
@@ -104,21 +93,22 @@ def eval_numerical_gradient_net(net, inputs, output, h=1e-5):
                                          inputs, output, h=h)
 
 
-# 中文数据流：随机挑选少量参数坐标，用中心差分和解析梯度比较。它是快速抽查，不是全部坐标证明；对 hinge/ReLU 折点需结合绝对误差和扰动尺度解释。
+# 随机挑选少量参数坐标，用中心差分和解析梯度比较。它是快速抽查，不是全部坐标证明；对 hinge/ReLU 折点需结合绝对误差和扰动尺度解释。
 def grad_check_sparse(f, x, analytic_grad, num_checks=10, h=1e-5):
-    """
-    sample a few random elements and only return numerical
-    in this dimensions.
+    """随机挑选少量参数坐标，用中心差分和解析梯度比较。它是快速抽查，不是全部坐标证明；对 hinge/ReLU 折点需结合绝对误差和扰动尺度解释。
+
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
     """
 
     for i in range(num_checks):
         ix = tuple([randrange(m) for m in x.shape])
 
         oldval = x[ix]
-        x[ix] = oldval + h  # increment by h
-        fxph = f(x)  # evaluate f(x + h)
-        x[ix] = oldval - h  # increment by h
-        fxmh = f(x)  # evaluate f(x - h)
+        x[ix] = oldval + h  # 递增(h)
+        fxph = f(x)  # 评价f(x+h)
+        x[ix] = oldval - h  # 递增(h)
+        fxmh = f(x)  # 评估f(x-h)
         x[ix] = oldval  # reset
 
         grad_numerical = (fxph - fxmh) / (2 * h)

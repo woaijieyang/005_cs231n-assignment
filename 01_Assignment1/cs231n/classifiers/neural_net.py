@@ -3,36 +3,11 @@ import matplotlib.pyplot as plt
 
 
 class TwoLayerNet(object):
-    """
-    A two-layer fully-connected neural network. The net has an input dimension of
-    N, a hidden layer dimension of H, and performs classification over C classes.
-    We train the network with a softmax loss function and L2 regularization on the
-    weight matrices. The network uses a ReLU nonlinearity after the first fully
-    connected layer.
+    """两层全连接网络：输入先做仿射变换和 ReLU，再映射到类别得分。训练时计算交叉熵与权重正则项，并返回每个参数的梯度。"""
 
-    In other words, the network has the following architecture:
-
-    input - fully connected layer - ReLU - fully connected layer - softmax
-
-    The outputs of the second fully-connected layer are the scores for each class.
-    """
-
-    # 中文数据流：按 D→H→C 结构初始化两组权重和零偏置，参数保存在独立 params 字典。
+    # 按 D→H→C 结构初始化两组权重和零偏置，参数保存在独立 params 字典。
     def __init__(self, input_size, hidden_size, output_size, std=1e-4):
-        """
-        Initialize the model. Weights are initialized to small random values and
-        biases are initialized to zero. Weights and biases are stored in the
-        variable self.params, which is a dictionary with the following keys:
-
-        W1: First layer weights; has shape (D, H)
-        b1: First layer biases; has shape (H,)
-        W2: Second layer weights; has shape (H, C)
-        b2: Second layer biases; has shape (C,)
-
-        Inputs:
-        - input_size: The dimension D of the input data.
-        - hidden_size: The number of neurons H in the hidden layer.
-        - output_size: The number of classes C.
+        """按 D→H→C 结构初始化两组权重和零偏置，参数保存在独立 params 字典。
         """
         self.params = {}
         self.params['W1'] = std * np.random.randn(input_size, hidden_size)
@@ -40,62 +15,39 @@ class TwoLayerNet(object):
         self.params['W2'] = std * np.random.randn(hidden_size, output_size)
         self.params['b2'] = np.zeros(output_size)
 
-    # 中文数据流：先计算 affine→ReLU→affine；无标签时返回 logits，有标签时计算稳定 Softmax 和 L2 正则，并手写反向返回每个参数的梯度。
+    # 先计算 affine→ReLU→affine；无标签时返回 logits，有标签时计算稳定 Softmax 和 L2 正则，并手写反向返回每个参数的梯度。
     def loss(self, X, y=None, reg=0.0):
+        """先计算 affine→ReLU→affine；无标签时返回 logits，有标签时计算稳定 Softmax 和 L2 正则，并手写反向返回每个参数的梯度。
+
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
+        - y：每个样本对应的整数类别标签。
+        - reg：权重正则化强度。
+
+        返回表达式：(loss, grads)；scores。
         """
-        Compute the loss and gradients for a two layer fully connected neural
-        network.
-
-        Inputs:
-        - X: Input data of shape (N, D). Each X[i] is a training sample.
-        - y: Vector of training labels. y[i] is the label for X[i], and each y[i] is
-          an integer in the range 0 <= y[i] < C. This parameter is optional; if it
-          is not passed then we only return scores, and if it is passed then we
-          instead return the loss and gradients.
-        - reg: Regularization strength.
-
-        Returns:
-        If y is None, return a matrix scores of shape (N, C) where scores[i, c] is
-        the score for class c on input X[i].
-
-        If y is not None, instead return a tuple of:
-        - loss: Loss (data loss and regularization loss) for this batch of training
-          samples.
-        - grads: Dictionary mapping parameter names to gradients of those parameters
-          with respect to the loss function; has the same keys as self.params.
-        """
-        # Unpack variables from the params dictionary
+        # 从参数词典解包变量
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
         N, D = X.shape
 
-        # Compute the forward pass
+        # 计算前传
         scores = None
-        #############################################################################
-        # TODO: Perform the forward pass, computing the class scores for the input. #
-        # Store the result in the scores variable, which should be an array of      #
-        # shape (N, C).                                                             #
-        #############################################################################
         # input->ReLu->Softmax->output
-        out1 = np.maximum(0, X.dot(W1) + b1)  # relu, (N, H)
+        out1 = np.maximum(0, X.dot(W1) + b1)  # relu, (N, H) (英语).
         scores = out1.dot(W2) + b2  # (N, C)
-        #############################################################################
-        #                              END OF YOUR CODE                             #
-        #############################################################################
 
-        # If the targets are not given then jump out, we're done
+        # 如果目标没有给出然后跳出去,我们就完了
         if y is None:
             return scores
 
-        # Compute the loss
+        # 计算损失
         loss = None
-        #############################################################################
-        # TODO: Finish the forward pass, and compute the loss. This should include  #
-        # both the data loss and L2 regularization for W1 and W2. Store the result  #
-        # in the variable loss, which should be a scalar. Use the Softmax           #
-        # classifier loss. So that your results match ours, multiply the            #
-        # regularization loss by 0.5                                                #
-        #############################################################################
+        # 完成前传并计算损失。这应包括
+        # W1和W2的数据丢失和L2正则化。
+        # 在可变损失中,该损失应为平面。使用软max
+        # 分类器损失。这样,你的结果就和我们的相匹配,乘以
+        # 正则化损失减少0.5
         # Softmax损失
         # softmax 对逐行平移不敏感；先减最大值，避免大 logits 导致 inf/NaN。
         scores = scores - np.max(scores, axis=1, keepdims=True)
@@ -107,17 +59,9 @@ class TwoLayerNet(object):
         # L2正则化
         loss += 0.5 * reg * np.sum(W1 * W1) + 0.5 * reg * np.sum(W2 * W2)
 
-        #############################################################################
-        #                              END OF YOUR CODE                             #
-        #############################################################################
 
-        # Backward pass: compute gradients
+        # 后传:计算梯度
         grads = {}
-        #############################################################################
-        # TODO: Compute the backward pass, computing the derivatives of the weights #
-        # and biases. Store the results in the grads dictionary. For example,       #
-        # grads['W1'] should store the gradient on W1, and be a matrix of same size #
-        #############################################################################
         # 对Softmax求Dw梯度，反向传播
         # Db梯度就是初始版本的梯度sum
         margin2 = np.exp(scores) / exp_sum
@@ -130,43 +74,33 @@ class TwoLayerNet(object):
         grads['b2'] = np.sum(margin2, axis=0)
 
         margin1 = margin2.dot(W2.T)  # (N, H)
-        margin1[out1 <= 0] = 0
+        margin1[out1 <= 0] = 0  # 第一次前向没有激活的位置，ReLU 的反向通路关闭；梯度不能继续传到对应第一层权重。
         dW1 = X.T.dot(margin1)  # (D, H)
         dW1 += reg * W1
         grads['W1'] = dW1
         grads['b1'] = np.sum(margin1, axis=0)
-        #############################################################################
-        #                              END OF YOUR CODE                             #
-        #############################################################################
 
         return loss, grads
 
-    # 中文数据流：循环抽取 mini-batch，用当前学习率执行 SGD；在预定检查点计算训练/验证准确率并衰减学习率。实际代码没有动量状态，不能把它称为动量 SGD。
+    # 循环抽取 mini-batch，用当前学习率执行 SGD；在预定检查点计算训练/验证准确率并衰减学习率。实际代码没有动量状态，不能把它称为动量 SGD。
     def train(self, X, y, X_val, y_val,
               learning_rate=1e-3, learning_rate_decay=0.95,
               reg=1e-5, num_iters=100,
               batch_size=200, verbose=False):
-        """
-        Train this neural network using stochastic gradient descent.
+        """循环抽取 mini-batch，用当前学习率执行 SGD；在预定检查点计算训练/验证准确率并衰减学习率。实际代码没有动量状态，不能把它称为动量 SGD。
 
-        Inputs:
-        - X: A numpy array of shape (N, D) giving training data.
-        - y: A numpy array f shape (N,) giving training labels; y[i] = c means that
-          X[i] has label c, where 0 <= c < C.
-        - X_val: A numpy array of shape (N_val, D) giving validation data.
-        - y_val: A numpy array of shape (N_val,) giving validation labels.
-        - learning_rate: Scalar giving learning rate for optimization.
-        - learning_rate_decay: Scalar giving factor used to decay the learning rate
-          after each epoch.
-        - reg: Scalar giving regularization strength.
-        - num_iters: Number of steps to take when optimizing.
-        - batch_size: Number of training examples to use per step.
-        - verbose: boolean; if true print progress during optimization.
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
+        - y：每个样本对应的整数类别标签。
+        - learning_rate：每一步参数更新的学习率。
+        - reg：权重正则化强度。
+        - num_iters：更新总次数。
+        - batch_size：每次更新使用的样本数。
         """
         num_train = X.shape[0]
         iterations_per_epoch = max(num_train / batch_size, 1)
 
-        # Use SGD to optimize the parameters in self.model
+        # 使用 SGD 优化自建模中的参数
         loss_history = []
         train_acc_history = []
         val_acc_history = []
@@ -175,49 +109,33 @@ class TwoLayerNet(object):
             X_batch = None
             y_batch = None
 
-            #########################################################################
-            # TODO: Create a random minibatch of training data and labels, storing  #
-            # them in X_batch and y_batch respectively.                             #
-            #########################################################################
             mask = np.random.choice(num_train, batch_size, replace=True)
             X_batch = X[mask]
             y_batch = y[mask]
-            #########################################################################
-            #                             END OF YOUR CODE                          #
-            #########################################################################
 
-            # Compute loss and gradients using the current minibatch
+            # 使用当前小批量计算损失和梯度
             loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
             loss_history.append(loss)
 
-            #########################################################################
-            # TODO: Use the gradients in the grads dictionary to update the         #
-            # parameters of the network (stored in the dictionary self.params)      #
-            # using stochastic gradient descent. You'll need to use the gradients   #
-            # stored in the grads dictionary defined above.                         #
-            #########################################################################
             # SGD负梯度方向更新
             self.params['W1'] -= learning_rate * grads['W1']
             self.params['W2'] -= learning_rate * grads['W2']
             self.params['b1'] -= learning_rate * grads['b1']
             self.params['b2'] -= learning_rate * grads['b2']
 
-            #########################################################################
-            #                             END OF YOUR CODE                          #
-            #########################################################################
 
             if verbose and it % 100 == 0:
                 print('iteration %d / %d: loss %f' % (it, num_iters, loss))
 
-            # Every epoch, check train and val accuracy and decay learning rate.
+            # 每个时代,检查火车和Val精度和衰变学习率.
             if it % iterations_per_epoch == 0:
-                # Check accuracy
+                # 检查准确度
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
                 train_acc_history.append(train_acc)
                 val_acc_history.append(val_acc)
 
-                # Decay learning rate
+                # 学习率下降
                 learning_rate *= learning_rate_decay
 
         return {
@@ -226,31 +144,18 @@ class TwoLayerNet(object):
             'val_acc_history': val_acc_history,
         }
 
-    # 中文数据流：执行两层前向并对 logits 取 argmax，不计算损失或梯度。
+    # 执行两层前向并对 logits 取 argmax，不计算损失或梯度。
     def predict(self, X):
-        """
-        Use the trained weights of this two-layer network to predict labels for
-        data points. For each data point we predict scores for each of the C
-        classes, and assign each data point to the class with the highest score.
+        """执行两层前向并对 logits 取 argmax，不计算损失或梯度。
 
-        Inputs:
-        - X: A numpy array of shape (N, D) giving N D-dimensional data points to
-          classify.
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
 
-        Returns:
-        - y_pred: A numpy array of shape (N,) giving predicted labels for each of
-          the elements of X. For all i, y_pred[i] = c means that X[i] is predicted
-          to have class c, where 0 <= c < C.
+        返回表达式：y_pred。
         """
         y_pred = None
 
-        ###########################################################################
-        # TODO: Implement this function; it should be VERY simple!                #
-        ###########################################################################
-        out1 = np.maximum(0, X.dot(self.params['W1']) + self.params['b1'])  # relu, (N, H)
+        out1 = np.maximum(0, X.dot(self.params['W1']) + self.params['b1'])  # relu, (N, H) (英语).
         y_pred = np.argmax(out1.dot(self.params['W2']) + self.params['b2'], axis=1)  # (N, C)
-        ###########################################################################
-        #                              END OF YOUR CODE                           #
-        ###########################################################################
 
         return y_pred

@@ -3,7 +3,7 @@ import numpy as np
 
 
 def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
-    # First figure out what the size of the output should be
+    # 首先找出输出的大小
     N, C, H, W = x_shape
     assert (H + 2 * padding - field_height) % stride == 0
     assert (W + 2 * padding - field_height) % stride == 0
@@ -24,8 +24,8 @@ def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
 
 
 def im2col_indices(x, field_height, field_width, padding=1, stride=1):
-    """ An implementation of im2col based on some fancy indexing """
-    # Zero-pad the input
+    """用行列索引把每个滑动窗口展开成一列，使卷积前向能通过一次矩阵乘法执行。"""
+    # 输入为零
     p = padding
     x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode='constant')
 
@@ -40,7 +40,7 @@ def im2col_indices(x, field_height, field_width, padding=1, stride=1):
 
 def col2im_indices(cols, x_shape, field_height=3, field_width=3, padding=1,
                    stride=1):
-    """ An implementation of col2im based on fancy indexing and np.add.at """
+    """把列矩阵恢复到输入网格。不同窗口对应同一像素时用 np.add.at 累加贡献，最后裁掉填充。"""
     N, C, H, W = x_shape
     H_padded, W_padded = H + 2 * padding, W + 2 * padding
     x_padded = np.zeros((N, C, H_padded, W_padded), dtype=cols.dtype)
@@ -48,7 +48,7 @@ def col2im_indices(cols, x_shape, field_height=3, field_width=3, padding=1,
                                  stride)
     cols_reshaped = cols.reshape(C * field_height * field_width, -1, N)
     cols_reshaped = cols_reshaped.transpose(2, 0, 1)
-    np.add.at(x_padded, (slice(None), k, i, j), cols_reshaped)
+    np.add.at(x_padded, (slice(None), k, i, j), cols_reshaped)  # 词号可能重复。每次出现都要把对应的上游梯度加到同一词向量行，普通高级索引赋值会漏掉重复贡献。
     if padding == 0:
         return x_padded
     return x_padded[:, :, padding:-padding, padding:-padding]

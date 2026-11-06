@@ -1,42 +1,44 @@
 import numpy as np
 
 """
-This file implements various first-order update rules that are commonly used for
-training neural networks. Each update rule accepts current weights and the
-gradient of the loss with respect to those weights and produces the next set of
-weights. Each update rule has the same interface:
+此文件执行常用的各种第一阶更新规则
+训练神经网络。每个更新规则都接受当前重量和
+这些重量损失的梯度,并产生下一组
+权重。每个更新规则的接口相同 :
 
-def update(w, dw, config=None):
+def 更新( w, dw, config=无) :
 
-Inputs:
-  - w: A numpy array giving the current weights.
-  - dw: A numpy array of the same shape as w giving the gradient of the
-    loss with respect to w.
-  - config: A dictionary containing hyperparameter values such as learning rate,
-    momentum, etc. If the update rule requires caching values over many
-    iterations, then config will also hold these cached values.
+输入：
+  - w: 给出当前权重的数组 。
+  - dw: 与 w 的形状相同的 numpy 数组, 给出渐变
+    关于W. 损失
+  - config: 包含超参数值的字典,如学习率,
+    如果更新规则要求缓存值超过许多
+    迭代,然后配置也会持有这些缓存值.
 
-Returns:
-  - next_w: The next point after the update.
-  - config: The config dictionary to be passed to the next iteration of the
-    update rule.
+返回：
+  - next_w: 更新后的下一点.
+  - config: 配置词典要传递到下一个迭代
+    更新规则。
 
-NOTE: For most update rules, the default learning rate will probably not perform
-well; however the default values of the other hyperparameters should work well
-for a variety of different problems.
+NOTE: 对大多数更新规则来说,默认学习率可能不会实现
+但是其他超参数的默认值应该很好使用
+对于各种各样的不同问题。
 
-For efficiency, update rules may perform in-place updates, mutating w and
-setting next_w equal to w.
+为提高效率,更新规则可在现场进行更新,使w和
+设置下一个_w 等于w。
 """
 
 
-# 中文数据流：输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
+# 输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
 def sgd(w, dw, config=None):
-    """
-    Performs vanilla stochastic gradient descent.
+    """输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
 
-    config format:
-    - learning_rate: Scalar learning rate.
+    参数在本函数中的角色：
+    - w：本层的权重。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(w, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-2)
@@ -45,20 +47,15 @@ def sgd(w, dw, config=None):
     return w, config
 
 
-# 中文数据流：分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
+# 分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 def adam(x, dx, config=None):
-    """
-    Uses the Adam update rule, which incorporates moving averages of both the
-    gradient and its square and a bias correction term.
+    """分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 
-    config format:
-    - learning_rate: Scalar learning rate.
-    - beta1: Decay rate for moving average of first moment of gradient.
-    - beta2: Decay rate for moving average of second moment of gradient.
-    - epsilon: Small scalar used for smoothing to avoid dividing by zero.
-    - m: Moving average of gradient.
-    - v: Moving average of squared gradient.
-    - t: Iteration number.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(next_x, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-3)

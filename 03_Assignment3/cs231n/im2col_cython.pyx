@@ -27,8 +27,7 @@ def im2col_cython(np.ndarray[DTYPE_t, ndim=4] x, int field_height,
             (C * field_height * field_width, N * HH * WW),
             dtype=x.dtype)
 
-    # Moving the inner loop to a C function with no bounds checking works, but does
-    # not seem to help performance in any measurable way.
+    # 下面的 C 循环按通道和窗口位置展开像素；关闭边界检查后，索引必须由调用方保证有效。
 
     im2col_cython_inner(cols, x_padded, N, C, H, W, HH, WW,
                         field_height, field_width, padding, stride)
@@ -62,8 +61,7 @@ def col2im_cython(np.ndarray[DTYPE_t, ndim=2] cols, int N, int C, int H, int W,
     cdef np.ndarray[DTYPE_t, ndim=4] x_padded = np.zeros((N, C, H + 2 * padding, W + 2 * padding),
                                         dtype=cols.dtype)
 
-    # Moving the inner loop to a C-function with no bounds checking improves
-    # performance quite a bit for col2im.
+    # 反向将每一列还原到输入窗口；窗口重叠时必须累加到同一像素。
     col2im_cython_inner(cols, x_padded, N, C, H, W, HH, WW, 
                         field_height, field_width, padding, stride)
     if padding > 0:

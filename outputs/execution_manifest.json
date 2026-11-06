@@ -1,92 +1,122 @@
 {
   "001_Knn": {
-    "code_sha256": "3f850682b21ec5ad8df8f8a3039bf556fb2365d659f7787f2485c07ee3702b15",
+    "code_sha256": "6d5309402a2469c93ffcab638ac88f4afe65fe5ac26044a036fd308a6b91d7e6",
+    "executed_code_sha256": "3f850682b21ec5ad8df8f8a3039bf556fb2365d659f7787f2485c07ee3702b15",
     "completed_run": "run-20261102-205950",
     "code_cells": 19,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "002_SVM": {
-    "code_sha256": "f5c8a3cddaed46aec7a0bd31a1d48bbdfc9da919fe300dc8a4dd139cd88b95b1",
+    "code_sha256": "82d5bf7805fbfe2de4f47dda22c03a0ac5620c4737fd12a57d7994485b6fe78d",
+    "executed_code_sha256": "f5c8a3cddaed46aec7a0bd31a1d48bbdfc9da919fe300dc8a4dd139cd88b95b1",
     "completed_run": "run-20261102-204346",
     "code_cells": 21,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "003_Softmax": {
-    "code_sha256": "e7f76d2244a449305e064fd4e71e5daa95f5b6f62c8c1373dd29a63bfd24574a",
+    "code_sha256": "9b8b64b7ee4f77077e516a8cc6549f50338122167a6d2fc937938cc5b7246d33",
+    "executed_code_sha256": "e7f76d2244a449305e064fd4e71e5daa95f5b6f62c8c1373dd29a63bfd24574a",
     "completed_run": "run-20261102-204427",
     "code_cells": 11,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "004_TwoLayerNet": {
-    "code_sha256": "eea57ee22f02b3ab82babce34d91f3bd77f71c820ce8d15a8c3d65616bf25c1a",
+    "code_sha256": "71d64406aecb3f1b42594726ff4dcbe27f1b05e265af49be06203245dc70a7e6",
+    "executed_code_sha256": "eea57ee22f02b3ab82babce34d91f3bd77f71c820ce8d15a8c3d65616bf25c1a",
     "completed_run": "run-20261102-204500",
     "code_cells": 15,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "005_ImageFeatures": {
-    "code_sha256": "e5d1948fe6202dff59a25399bc3420980ced0a3179c5fdc3cc820876eac4d1ef",
+    "code_sha256": "a0b6d25791a77f223e389d323f4feb4056ad0ce8a875ae8a27c0d4699161d317",
+    "executed_code_sha256": "e5d1948fe6202dff59a25399bc3420980ced0a3179c5fdc3cc820876eac4d1ef",
     "completed_run": "run-20261102-204545",
     "code_cells": 14,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "006_FullyConnectedNets": {
-    "code_sha256": "920f00e3dc6d0ca6feb9baa3cc9dafc9a0ec666c0b9d1820b00212a8e0f9cb55",
+    "code_sha256": "5e65ae935e9d7a1bb9fbeda483c8956f46dc162af19b97aa4f7242d5c4117062",
+    "executed_code_sha256": "920f00e3dc6d0ca6feb9baa3cc9dafc9a0ec666c0b9d1820b00212a8e0f9cb55",
     "completed_run": "run-20261102-205756",
     "code_cells": 23,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "007_BatchNormalization": {
-    "code_sha256": "814c7414eb2ceca758e2bbb9985c55742aa1cd3e75af19b7118e43ef2cd2f569",
+    "code_sha256": "3b609067101f88e27f06366f30debd2132d5ba0a0aee69a7f1f14f12cf64b14a",
+    "executed_code_sha256": "814c7414eb2ceca758e2bbb9985c55742aa1cd3e75af19b7118e43ef2cd2f569",
     "completed_run": "run-20261102-210341",
     "code_cells": 13,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "008_Dropout": {
-    "code_sha256": "a61b140163c404325ffc8aa164c5987ad1c43242efa9ea1f3180efe29d48674a",
+    "code_sha256": "9ef0ee050c14c474e32989c211793dad72c9957397cc431726070c1414dd5b08",
+    "executed_code_sha256": "a61b140163c404325ffc8aa164c5987ad1c43242efa9ea1f3180efe29d48674a",
     "completed_run": "run-20261102-210432",
     "code_cells": 9,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "009_ConvolutionalNetworks": {
-    "code_sha256": "2f92bdf80c9129191eb71bed0d6af233acfa84480accb721ec9421dbdd6d2de4",
+    "code_sha256": "dbbd3feafbb503cf8df0f11e14d883b1427d16f5828ff1bf435c90a3a7672bbb",
+    "executed_code_sha256": "2f92bdf80c9129191eb71bed0d6af233acfa84480accb721ec9421dbdd6d2de4",
     "completed_run": "run-20261102-210448",
     "code_cells": 22,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "010_PyTorch": {
-    "code_sha256": "15b620de87896b008839bfd173a780d3caa6b3958049aa9b6a666c3b250cde31",
+    "code_sha256": "4b16ab087a3c29bf34059a3f59f29f80ea20c72ba2ae9c8efc38841ec357975d",
+    "executed_code_sha256": "15b620de87896b008839bfd173a780d3caa6b3958049aa9b6a666c3b250cde31",
     "completed_run": "run-20261102-220716",
     "code_cells": 28,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "011_RNN_Captioning": {
-    "code_sha256": "116908d7c38750348404c5a5c1d292b55a93fcf8e0e55a9d4f1affdc144be58b",
+    "code_sha256": "46610680f9bc423c36543012edcb62eb8a5ff87e566b456c8940ea68a2a6edf4",
+    "executed_code_sha256": "116908d7c38750348404c5a5c1d292b55a93fcf8e0e55a9d4f1affdc144be58b",
     "completed_run": "run-20261102-222707",
     "code_cells": 20,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "012_LSTM_Captioning": {
-    "code_sha256": "677ad3aafa6eb160530828cd2eace95c2501159d9440d8ef6fa850b005b11eb3",
+    "code_sha256": "1ca41944ca4e2d349ee48e4251bb89910ee05569358a778c0e51305b86a9477d",
+    "executed_code_sha256": "677ad3aafa6eb160530828cd2eace95c2501159d9440d8ef6fa850b005b11eb3",
     "completed_run": "run-20261102-222725",
     "code_cells": 16,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "013_NetworkVisualization_PyTorch": {
-    "code_sha256": "19187576d8ee04bac52cd03a5a000fe348ef641bd4fec09f12d726bd4a987304",
+    "code_sha256": "3156512af5e3814b0ea251d7a48c886c8a880354053535ff61a64680ca53e454",
+    "executed_code_sha256": "19187576d8ee04bac52cd03a5a000fe348ef641bd4fec09f12d726bd4a987304",
     "completed_run": "run-20261102-221942",
     "code_cells": 17,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "014_StyleTransfer_PyTorch": {
-    "code_sha256": "053916275ef10cd4c788412c361e474fe444f86fb9cc7ed7943da412015ee16a",
+    "code_sha256": "abd07bec384f0fd40fb165e0db35b7b2413b257e96b7c32fd3913111467340bd",
+    "executed_code_sha256": "053916275ef10cd4c788412c361e474fe444f86fb9cc7ed7943da412015ee16a",
     "completed_run": "run-20261102-213919",
     "code_cells": 19,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   },
   "015_GANs_PyTorch": {
-    "code_sha256": "5812a1d85777734e5e9b60a21a1855e98c4a8ef58525c42c3369bdda28f41780",
+    "code_sha256": "9fc5a9aefd4c58c7733179cd7dc8a04d2a36cdb6b2f50c511014b916cfc62ec6",
+    "executed_code_sha256": "5812a1d85777734e5e9b60a21a1855e98c4a8ef58525c42c3369bdda28f41780",
     "completed_run": "run-20261102-214224",
     "code_cells": 27,
-    "error_outputs": 0
+    "error_outputs": 0,
+    "verification": "executable syntax tree, execution counts and complete outputs match"
   }
 }

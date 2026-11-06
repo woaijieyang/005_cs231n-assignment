@@ -1,0 +1,82 @@
+[
+  {
+    "figure": "BN_Fig1",
+    "page": 6,
+    "source": "https://proceedings.mlr.press/v37/ioffe15.pdf",
+    "credit": "Ioffe 与 Szegedy，ICML 2015，图 1",
+    "treatment": "原图区域，裁去页边与正文",
+    "sha256": "b9e453ef930a9ee664514c05a093be0ffa04a5fa8cb885f28c65a3762497adcb"
+  },
+  {
+    "figure": "Dropout_Fig1",
+    "page": 2,
+    "source": "https://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf",
+    "credit": "Srivastava 等，JMLR 2014，图 1",
+    "treatment": "原图区域，裁去页边与正文",
+    "sha256": "bb7de836c0cb92c89241127dd5b885b44d5e5e501c99e7f678f3eb92589861ea"
+  },
+  {
+    "figure": "Dropout_Fig2",
+    "page": 3,
+    "source": "https://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf",
+    "credit": "Srivastava 等，JMLR 2014，图 2",
+    "treatment": "原图区域，裁去页边与正文",
+    "sha256": "2e0c2bb337b5f0762e35b59c100945ae962529d112bf040a597d07bd6a69326f"
+  },
+  {
+    "figure": "GAN_Fig1",
+    "page": 4,
+    "source": "https://papers.nips.cc/paper_files/paper/2014/file/f033ed80deb0234979a61f95710dbe25-Paper.pdf",
+    "credit": "Goodfellow 等，NeurIPS 2014，图 1",
+    "treatment": "原图区域，裁去页边与正文",
+    "sha256": "9d4ff9bc2a7114fc5eeafb2c20ba449d9327f32b0a41968a7c309fcc1e9dc00c"
+  },
+  {
+    "figure": "NIC_Fig1",
+    "image": "https://ar5iv.labs.arxiv.org/html/1411.4555/assets/overview_fig_2.png",
+    "source": "https://openaccess.thecvf.com/content_cvpr_2015/papers/Vinyals_Show_and_Tell_2015_CVPR_paper.pdf",
+    "page": 1,
+    "credit": "Vinyals 等，CVPR 2015，图 1",
+    "treatment": "直接引用论文 HTML 版的图片地址"
+  },
+  {
+    "figure": "NIC_Fig3",
+    "image": "https://ar5iv.labs.arxiv.org/html/1411.4555/assets/unrolled_lstm.png",
+    "source": "https://openaccess.thecvf.com/content_cvpr_2015/papers/Vinyals_Show_and_Tell_2015_CVPR_paper.pdf",
+    "page": 4,
+    "credit": "Vinyals 等，CVPR 2015，图 3",
+    "treatment": "直接引用论文 HTML 版的图片地址"
+  },
+  {
+    "figure": "Style_Fig1",
+    "image": "https://ar5iv.labs.arxiv.org/html/1508.06576/assets/network_model.png",
+    "source": "https://arxiv.org/pdf/1508.06576",
+    "page": 3,
+    "credit": "Gatys、Ecker 与 Bethge，2015 年预印本，图 1",
+    "treatment": "直接引用论文 HTML 版的图片地址"
+  },
+  {
+    "figure": "DCGAN_Fig1",
+    "image": "https://ar5iv.labs.arxiv.org/html/1511.06434/assets/lsun_bedrooms_generator.png",
+    "source": "https://arxiv.org/pdf/1511.06434",
+    "page": 4,
+    "credit": "Radford、Metz 与 Chintala，图 1",
+    "treatment": "直接引用论文 HTML 版的图片地址"
+  },
+  {
+    "figure": "HOG_Fig1_detail",
+    "source": "https://lear.inrialpes.fr/people/triggs/pubs/Dalal-cvpr05.pdf",
+    "pdf_page": 2,
+    "credit": "Dalal 与 Triggs，CVPR 2005，图 1 局部",
+    "treatment": "裁取原图中已标明的部分",
+    "sha256": "916007f6e9edac81ed3ce98ddf84a565f0f75ab9bc85d7ae198c44869b0c34c8"
+  },
+  {
+    "figure": "NIN_Fig2",
+    "source": "https://arxiv.org/pdf/1312.4400",
+    "pdf_page": 4,
+    "credit": "Lin、Chen 与 Yan，图 2",
+    "treatment": "裁取原图中已标明的部分",
+    "sha256": "cd765e2e4ad00ca63e9d7f32e8d7079451718dadc1661ae433a9e9c7ff52a965"
+  }
+]

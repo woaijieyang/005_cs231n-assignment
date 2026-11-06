@@ -2,28 +2,21 @@ import numpy as np
 from random import shuffle
 
 
-# 中文数据流：逐样本逐错误类别计算 hinge margin，正 margin 才贡献损失和权重梯度。正确类别梯度扣去全部激活错误类别贡献，最后按 N 平均并加正则。
+# 逐样本逐错误类别计算 hinge margin，正 margin 才贡献损失和权重梯度。正确类别梯度扣去全部激活错误类别贡献，最后按 N 平均并加正则。
 def svm_loss_naive(W, X, y, reg):
+    """逐样本逐错误类别计算 hinge margin，正 margin 才贡献损失和权重梯度。正确类别梯度扣去全部激活错误类别贡献，最后按 N 平均并加正则。
+
+    参数在本函数中的角色：
+    - W：权重矩阵。
+    - X：输入样本矩阵或图像批次。
+    - y：每个样本对应的整数类别标签。
+    - reg：权重正则化强度。
+
+    返回表达式：(loss, dW)。
     """
-    Structured SVM loss function, naive implementation (with loops).
+    dW = np.zeros(W.shape)  # 将梯度初始化为 0
 
-    Inputs have dimension D, there are C classes, and we operate on minibatches
-    of N examples.
-
-    Inputs:
-    - W: A numpy array of shape (D, C) containing weights.
-    - X: A numpy array of shape (N, D) containing a minibatch of data.
-    - y: A numpy array of shape (N,) containing training labels; y[i] = c means
-      that X[i] has label c, where 0 <= c < C.
-    - reg: (float) regularization strength
-
-    Returns a tuple of:
-    - loss as single float
-    - gradient with respect to weights W; an array of same shape as W
-    """
-    dW = np.zeros(W.shape)  # initialize the gradient as zero
-
-    # compute the loss and the gradient
+    # 计算损失和梯度
     num_classes = W.shape[1]
     num_train = X.shape[0]
     loss = 0.0
@@ -40,46 +33,37 @@ def svm_loss_naive(W, X, y, reg):
                 dW[:, j] += X[i]
                 dW[:, y[i]] += -X[i]
 
-    # Right now the loss is a sum over all training examples, but we want it
-    # to be an average instead so we divide by num_train.
+    # 现在损失是所有训练实例的总和,但我们想要它
+    # 以平均值代替,所以我们用 num_train 来除法。
     # SVM损失函数L=1/N*sum(max(0，X_i·W_i-X_i·W_yi))+reg*|W|^2
     # 取平均值
     loss /= num_train
     dW /= num_train
-    # Add regularization to the loss.
+    # 在损失中加入正则化。
     # 这里乘以0.5是为了Dw求梯度后为0.5*2*reg*W，方便取整
     loss += 0.5 * reg * np.sum(W * W)
     dW += reg * W
-    #############################################################################
-    # TODO:                                                                     #
-    # Compute the gradient of the loss function and store it dW.                #
-    # Rather that first computing the loss and then computing the derivative,   #
-    # it may be simpler to compute the derivative at the same time that the     #
-    # loss is being computed. As a result you may need to modify some of the    #
-    # code above to compute the gradient.                                       #
-    #############################################################################
-
     return loss, dW
 
 
-# 中文数据流：一次 X@W 得到全部类别得分，广播正确类别得分形成 margin 矩阵。通过正 margin 指示矩阵和 X.T 相乘得到 dW，正则化系数与循环版本保持一致。
+# 一次 X@W 得到全部类别得分，广播正确类别得分形成 margin 矩阵。通过正 margin 指示矩阵和 X.T 相乘得到 dW，正则化系数与循环版本保持一致。
 def svm_loss_vectorized(W, X, y, reg):
-    """
-    Structured SVM loss function, vectorized implementation.
+    """一次 X@W 得到全部类别得分，广播正确类别得分形成 margin 矩阵。通过正 margin 指示矩阵和 X.T 相乘得到 dW，正则化系数与循环版本保持一致。
 
-    Inputs and outputs are the same as svm_loss_naive.
+    参数在本函数中的角色：
+    - W：权重矩阵。
+    - X：输入样本矩阵或图像批次。
+    - y：每个样本对应的整数类别标签。
+    - reg：权重正则化强度。
+
+    返回表达式：(loss, dW)。
     """
     loss = 0.0
-    dW = np.zeros(W.shape)  # initialize the gradient as zero
+    dW = np.zeros(W.shape)  # 将梯度初始化为 0
     num_train = X.shape[0]
 
-    #############################################################################
-    # TODO:                                                                     #
-    # Implement a vectorized version of the structured SVM loss, storing the    #
-    # result in loss.                                                           #
-    #############################################################################
     scores = X.dot(W)
-    margin = scores - scores[np.arange(num_train), y].reshape(num_train, 1) + 1
+    margin = scores - scores[np.arange(num_train), y].reshape(num_train, 1) + 1  # arange 与标签数组逐行配对，选出 N 个正确类别分数；转成 N×1 才能从同一样本的每一类得分中减去它。
     margin[np.arange(num_train), y] = 0.0  # j！=yi 不计算
     margin = (margin > 0) * margin
     loss += margin.sum()
@@ -87,30 +71,15 @@ def svm_loss_vectorized(W, X, y, reg):
     loss /= num_train
     # 正则化
     loss += 0.5 * reg * np.sum(W * W)
-    #############################################################################
-    #                             END OF YOUR CODE                              #
-    #############################################################################
 
-    #############################################################################
-    # TODO:                                                                     #
-    # Implement a vectorized version of the gradient for the structured SVM     #
-    # loss, storing the result in dW.                                           #
-    #                                                                           #
-    # Hint: Instead of computing the gradient from scratch, it may be easier    #
-    # to reuse some of the intermediate values that you used to compute the     #
-    # loss.                                                                     #
-    #############################################################################
     # 向量化的梯度推导，所有j！=yi的元素贡献一次+X_i，所有j=yi的元素献所有max>0个数次-X_i
     margin = (margin > 0) * 1
     row_sum = np.sum(margin, axis=1)
-    margin[np.arange(num_train), y] = -row_sum
-    dW = X.T.dot(margin)
+    margin[np.arange(num_train), y] = -row_sum  # 每个错误类别的激活间隔都要从真类扣一次，所以真类的系数是该行正间隔数的负值。
+    dW = X.T.dot(margin)  # 把每个样本的特征乘以对应类别系数，再沿样本维相加，结果与权重 W 的形状相同。
     # 取平均值
     dW /= num_train
     # 正则化
     dW += reg * W
-    #############################################################################
-    #                             END OF YOUR CODE                              #
-    #############################################################################
 
     return loss, dW

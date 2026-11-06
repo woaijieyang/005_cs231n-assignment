@@ -2,18 +2,16 @@ from cs231n.layers import *
 from cs231n.fast_layers import *
 
 
-# 中文数据流：按 affine → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
+# 按 affine → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 def affine_relu_forward(x, w, b):
-    """
-    Convenience layer that perorms an affine transform followed by a ReLU
+    """按 affine → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 
-    Inputs:
-    - x: Input to the affine layer
-    - w, b: Weights for the affine layer
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - w：本层的权重。
+    - b：与输出维对齐的偏置。
 
-    Returns a tuple of:
-    - out: Output from the ReLU
-    - cache: Object to give to the backward pass
+    返回表达式：(out, cache)。
     """
     a, fc_cache = affine_forward(x, w, b)
     out, relu_cache = relu_forward(a)
@@ -21,10 +19,15 @@ def affine_relu_forward(x, w, b):
     return out, cache
 
 
-# 中文数据流：读取 affine_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+# 读取 affine_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
 def affine_relu_backward(dout, cache):
-    """
-    Backward pass for the affine-relu convenience layer
+    """读取 affine_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
+
+    返回表达式：(dx, dw, db)。
     """
     fc_cache, relu_cache = cache
     da = relu_backward(dout, relu_cache)
@@ -32,23 +35,19 @@ def affine_relu_backward(dout, cache):
     return dx, dw, db
 
 
-# 中文数据流：按 affine → bn → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
+# 按 affine → bn → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 def affine_bn_relu_forward(x, w, b, gamma, beta, bn_param):
-    """
-    Convenience layer that performs an affine transform, batch normalization,
-    and ReLU.
+    """按 affine → bn → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 
-    Inputs:
-    - x: Array of shape (N, D1); input to the affine layer
-    - w, b: Arrays of shape (D2, D2) and (D2,) giving the weight and bias for
-      the affine transform.
-    - gamma, beta: Arrays of shape (D2,) and (D2,) giving scale and shift
-      parameters for batch normalization.
-    - bn_param: Dictionary of parameters for batch normalization.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - w：本层的权重。
+    - b：与输出维对齐的偏置。
+    - gamma：可训练的逐特征缩放系数。
+    - beta：可训练的逐特征偏移量。
+    - bn_param：模式、数值稳定常数和滑动统计等配置。
 
-    Returns:
-    - out: Output from ReLU, of shape (N, D2)
-    - cache: Object to give to the backward pass.
+    返回表达式：(out, cache)。
     """
     a, fc_cache = affine_forward(x, w, b)
     a_bn, bn_cache = batchnorm_forward(a, gamma, beta, bn_param)
@@ -57,10 +56,15 @@ def affine_bn_relu_forward(x, w, b, gamma, beta, bn_param):
     return out, cache
 
 
-# 中文数据流：读取 affine_bn_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+# 读取 affine_bn_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
 def affine_bn_relu_backward(dout, cache):
-    """
-    Backward pass for the affine-batchnorm-relu convenience layer.
+    """读取 affine_bn_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
+
+    返回表达式：(dx, dw, db, dgamma, dbeta)。
     """
     fc_cache, bn_cache, relu_cache = cache
     da_bn = relu_backward(dout, relu_cache)
@@ -69,18 +73,17 @@ def affine_bn_relu_backward(dout, cache):
     return dx, dw, db, dgamma, dbeta
 
 
-# 中文数据流：按 conv → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
+# 按 conv → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 def conv_relu_forward(x, w, b, conv_param):
-    """
-    A convenience layer that performs a convolution followed by a ReLU.
+    """按 conv → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 
-    Inputs:
-    - x: Input to the convolutional layer
-    - w, b, conv_param: Weights and parameters for the convolutional layer
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - w：本层的权重。
+    - b：与输出维对齐的偏置。
+    - conv_param：卷积窗口步幅与边界填充。
 
-    Returns a tuple of:
-    - out: Output from the ReLU
-    - cache: Object to give to the backward pass
+    返回表达式：(out, cache)。
     """
     a, conv_cache = conv_forward_fast(x, w, b, conv_param)
     out, relu_cache = relu_forward(a)
@@ -88,10 +91,15 @@ def conv_relu_forward(x, w, b, conv_param):
     return out, cache
 
 
-# 中文数据流：读取 conv_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+# 读取 conv_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
 def conv_relu_backward(dout, cache):
-    """
-    Backward pass for the conv-relu convenience layer.
+    """读取 conv_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
+
+    返回表达式：(dx, dw, db)。
     """
     conv_cache, relu_cache = cache
     da = relu_backward(dout, relu_cache)
@@ -99,7 +107,7 @@ def conv_relu_backward(dout, cache):
     return dx, dw, db
 
 
-# 中文数据流：按 conv → bn → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
+# 按 conv → bn → relu 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 def conv_bn_relu_forward(x, w, b, gamma, beta, conv_param, bn_param):
     a, conv_cache = conv_forward_fast(x, w, b, conv_param)
     an, bn_cache = spatial_batchnorm_forward(a, gamma, beta, bn_param)
@@ -108,7 +116,7 @@ def conv_bn_relu_forward(x, w, b, gamma, beta, conv_param, bn_param):
     return out, cache
 
 
-# 中文数据流：读取 conv_bn_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+# 读取 conv_bn_relu 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
 def conv_bn_relu_backward(dout, cache):
     conv_cache, bn_cache, relu_cache = cache
     dan = relu_backward(dout, relu_cache)
@@ -117,19 +125,18 @@ def conv_bn_relu_backward(dout, cache):
     return dx, dw, db, dgamma, dbeta
 
 
-# 中文数据流：按 conv → relu → pool 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
+# 按 conv → relu → pool 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 def conv_relu_pool_forward(x, w, b, conv_param, pool_param):
-    """
-    Convenience layer that performs a convolution, a ReLU, and a pool.
+    """按 conv → relu → pool 顺序调用基础层，将各层 cache 按相同顺序保存。输出最终激活及组合 cache；该包装不额外引入训练参数。
 
-    Inputs:
-    - x: Input to the convolutional layer
-    - w, b, conv_param: Weights and parameters for the convolutional layer
-    - pool_param: Parameters for the pooling layer
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - w：本层的权重。
+    - b：与输出维对齐的偏置。
+    - conv_param：卷积窗口步幅与边界填充。
+    - pool_param：池化窗口大小与步幅。
 
-    Returns a tuple of:
-    - out: Output from the pooling layer
-    - cache: Object to give to the backward pass
+    返回表达式：(out, cache)。
     """
     a, conv_cache = conv_forward_fast(x, w, b, conv_param)
     s, relu_cache = relu_forward(a)
@@ -138,10 +145,15 @@ def conv_relu_pool_forward(x, w, b, conv_param, pool_param):
     return out, cache
 
 
-# 中文数据流：读取 conv_relu_pool 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+# 读取 conv_relu_pool 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
 def conv_relu_pool_backward(dout, cache):
-    """
-    Backward pass for the conv-relu-pool convenience layer
+    """读取 conv_relu_pool 前向保存的各层 cache，按计算顺序的逆序传播 dout。返回输入梯度和各参数梯度，具体形状与各基础层接口一致。
+
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
+
+    返回表达式：(dx, dw, db)。
     """
     conv_cache, relu_cache, pool_cache = cache
     ds = max_pool_backward_fast(dout, pool_cache)

@@ -204,10 +204,10 @@ def train_gpu(data,cell_type,epochs=20,batch_size=100,seed=231):
         model.train()
         while offset<n:
             rows=torch.as_tensor(order[offset:offset+batch_size],device=device)
-            optimizer.zero_grad(set_to_none=True)
+            optimizer.zero_grad(set_to_none=True)  # 清除上一个批次累积的梯度，再为当前 batch 计算新的梯度。
             loss=model.loss(features[indices[rows]],captions[rows])
             if not torch.isfinite(loss):save();raise FloatingPointError('nonfinite training loss')
-            loss.backward();optimizer.step();step+=1;offset+=len(rows)
+            loss.backward();optimizer.step();step+=1;offset+=len(rows)  # 从标量目标沿计算图计算梯度；参数更新发生在后面的优化器 step。
             if step%200==0:emit({'event':'batch','epoch':epoch+1,'step':step,'offset':offset,'loss':loss.item()})
             if step%1000==0:save()
         val_loss,bleu,examples=evaluate(model,vf,vc,vi,data['idx_to_word'])

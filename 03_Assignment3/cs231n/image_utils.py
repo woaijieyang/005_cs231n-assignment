@@ -9,21 +9,12 @@ import numpy as np
 from study_runtime import imread, imresize
 
 """
-Utility functions used for viewing and processing images.
+用于查看和处理图像的实用功能.
 """
 
 
 def blur_image(X):
-    """
-    A very gentle image blurring operation, to be used as a regularizer for
-    image generation.
-
-    Inputs:
-    - X: Image data of shape (N, 3, H, W)
-
-    Returns:
-    - X_blur: Blurred version of X, of shape (N, 3, H, W)
-    """
+    """使用固定平滑卷积核对 NCHW 图像作轻微模糊，抑制图像优化时出现的局部高频噪声。"""
     from cs231n.fast_layers import conv_forward_fast
     w_blur = np.zeros((3, 3, 3, 3))
     b_blur = np.zeros(3)
@@ -40,15 +31,12 @@ SQUEEZENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 
 def preprocess_image(img):
-    """Preprocess an image for squeezenet.
-    
-    Subtracts the pixel mean and divides by the standard deviation.
-    """
+    """把像素缩放到 [0,1]，按 SqueezeNet 的通道均值和标准差归一化。"""
     return (img.astype(np.float32) / 255.0 - SQUEEZENET_MEAN) / SQUEEZENET_STD
 
 
 def deprocess_image(img, rescale=False):
-    """Undo preprocessing on an image and convert back to uint8."""
+    """撤销通道标准化，必要时调整显示范围，再转为可显示的 uint8 像素。"""
     img = (img * SQUEEZENET_STD + SQUEEZENET_MEAN)
     if rescale:
         vmin, vmax = img.min(), img.max()
@@ -57,10 +45,7 @@ def deprocess_image(img, rescale=False):
 
 
 def image_from_url(url):
-    """
-    Read an image from a URL. Returns a numpy array with the pixel data.
-    We write the image to a temporary file then read it back. Kinda gross.
-    """
+    """先按 URL 查找共享缓存中的图片。缺失时下载并解码，验证格式后保存缓存，并返回像素数组。"""
     import hashlib
     import requests
     from study_runtime import data_path
@@ -80,12 +65,7 @@ def image_from_url(url):
 
 
 def load_image(filename, size=None):
-    """Load and resize an image from disk.
-
-    Inputs:
-    - filename: path to file
-    - size: size of shortest dimension after rescaling
-    """
+    """读取文件并按较短边等比例缩放，返回像素数组。size 为空时保留原尺寸。"""
     img = imread(filename)
     if size is not None:
         orig_shape = np.array(img.shape[:2])

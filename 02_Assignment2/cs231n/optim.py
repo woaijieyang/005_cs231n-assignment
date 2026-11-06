@@ -1,42 +1,44 @@
 import numpy as np
 
 """
-This file implements various first-order update rules that are commonly used
-for training neural networks. Each update rule accepts current weights and the
-gradient of the loss with respect to those weights and produces the next set of
-weights. Each update rule has the same interface:
+此文件执行常用的各种第一阶更新规则
+用于训练神经网络。每个更新规则都接受当前加权和
+这些重量损失的梯度,并产生下一组
+权重。每个更新规则的接口相同 :
 
-def update(w, dw, config=None):
+def 更新( w, dw, config=无) :
 
-Inputs:
-  - w: A numpy array giving the current weights.
-  - dw: A numpy array of the same shape as w giving the gradient of the
-    loss with respect to w.
-  - config: A dictionary containing hyperparameter values such as learning
-    rate, momentum, etc. If the update rule requires caching values over many
-    iterations, then config will also hold these cached values.
+输入：
+  - w: 给出当前权重的数组 。
+  - dw: 与 w 的形状相同的 numpy 数组, 给出渐变
+    关于W. 损失
+  - config: 包含超参数值的字典,如学习
+    速率、动量等。如果更新规则要求缓存值超过许多
+    迭代,然后配置也会持有这些缓存值.
 
-Returns:
-  - next_w: The next point after the update.
-  - config: The config dictionary to be passed to the next iteration of the
-    update rule.
+返回：
+  - next_w: 更新后的下一点.
+  - config: 配置词典要传递到下一个迭代
+    更新规则。
 
-NOTE: For most update rules, the default learning rate will probably not
-perform well; however the default values of the other hyperparameters should
-work well for a variety of different problems.
+NOTE: 对于大多数更新规则,默认学习率可能不会
+运行良好;但其他超参数的默认值应当
+解决各种不同问题的工作效果良好。
 
-For efficiency, update rules may perform in-place updates, mutating w and
-setting next_w equal to w.
+为提高效率,更新规则可在现场进行更新,使w和
+设置下一个_w 等于w。
 """
 
 
-# 中文数据流：输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
+# 输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
 def sgd(w, dw, config=None):
-    """
-    Performs vanilla stochastic gradient descent.
+    """输入当前参数、同形状梯度及学习率，沿负梯度更新。返回新参数和配置，某些实现原地修改输入参数，调用方不能假定原数组仍是旧值。
 
-    config format:
-    - learning_rate: Scalar learning rate.
+    参数在本函数中的角色：
+    - w：本层的权重。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(w, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-2)
@@ -45,17 +47,15 @@ def sgd(w, dw, config=None):
     return w, config
 
 
-# 中文数据流：更新速度 v=μv−ηdw，再令 w=w+v；每组参数独立保存速度。输入梯度与速度同形状，返回更新后的权重及带新速度的配置。
+# 更新速度 v=μv−ηdw，再令 w=w+v；每组参数独立保存速度。输入梯度与速度同形状，返回更新后的权重及带新速度的配置。
 def sgd_momentum(w, dw, config=None):
-    """
-    Performs stochastic gradient descent with momentum.
+    """更新速度 v=μv−ηdw，再令 w=w+v；每组参数独立保存速度。输入梯度与速度同形状，返回更新后的权重及带新速度的配置。
 
-    config format:
-    - learning_rate: Scalar learning rate.
-    - momentum: Scalar between 0 and 1 giving the momentum value.
-      Setting momentum = 0 reduces to sgd.
-    - velocity: A numpy array of the same shape as w and dw used to store a
-      moving average of the gradients.
+    参数在本函数中的角色：
+    - w：本层的权重。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(next_w, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-2)
@@ -63,32 +63,22 @@ def sgd_momentum(w, dw, config=None):
     v = config.get('velocity', np.zeros_like(w))
 
     next_w = None
-    ###########################################################################
-    # TODO: Implement the momentum update formula. Store the updated value in #
-    # the next_w variable. You should also use and update the velocity v.     #
-    ###########################################################################
     v = config['momentum'] * v - config['learning_rate'] * dw
     next_w = w + v
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
     config['velocity'] = v
 
     return next_w, config
 
 
-# 中文数据流：缓存梯度平方的指数滑动平均，以 sqrt(cache)+eps 调整各坐标步长。不要把本步梯度平方直接代替历史缓存；输出参数及更新后的 cache。
+# 缓存梯度平方的指数滑动平均，以 sqrt(cache)+eps 调整各坐标步长。不要把本步梯度平方直接代替历史缓存；输出参数及更新后的 cache。
 def rmsprop(x, dx, config=None):
-    """
-    Uses the RMSProp update rule, which uses a moving average of squared
-    gradient values to set adaptive per-parameter learning rates.
+    """缓存梯度平方的指数滑动平均，以 sqrt(cache)+eps 调整各坐标步长。不要把本步梯度平方直接代替历史缓存；输出参数及更新后的 cache。
 
-    config format:
-    - learning_rate: Scalar learning rate.
-    - decay_rate: Scalar between 0 and 1 giving the decay rate for the squared
-      gradient cache.
-    - epsilon: Small scalar used for smoothing to avoid dividing by zero.
-    - cache: Moving average of second moments of gradients.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(next_x, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-2)
@@ -97,34 +87,21 @@ def rmsprop(x, dx, config=None):
     config.setdefault('cache', np.zeros_like(x))
 
     next_x = None
-    ###########################################################################
-    # TODO: Implement the RMSprop update formula, storing the next value of x #
-    # in the next_x variable. Don't forget to update cache value stored in    #
-    # config['cache'].                                                        #
-    ###########################################################################
     config['cache'] = config['decay_rate'] * config['cache'] + (1 - config['decay_rate']) * dx ** 2
     next_x = x - config['learning_rate'] * dx / (np.sqrt(config['cache']) + config['epsilon'])
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
 
     return next_x, config
 
 
-# 中文数据流：分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
+# 分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 def adam(x, dx, config=None):
-    """
-    Uses the Adam update rule, which incorporates moving averages of both the
-    gradient and its square and a bias correction term.
+    """分别更新一阶矩 m 和二阶矩 v，递增时间步并进行初值偏差校正，再更新参数。Assignment 2 使用标准校正矩写法；Assignment 3 保留课程 alpha/epsilon 位置，GPU 对照也保持同一公式。
 
-    config format:
-    - learning_rate: Scalar learning rate.
-    - beta1: Decay rate for moving average of first moment of gradient.
-    - beta2: Decay rate for moving average of second moment of gradient.
-    - epsilon: Small scalar used for smoothing to avoid dividing by zero.
-    - m: Moving average of gradient.
-    - v: Moving average of squared gradient.
-    - t: Iteration number.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - config：该参数独立的超参数与历史状态。
+
+    返回表达式：(next_x, config)。
     """
     if config is None: config = {}
     config.setdefault('learning_rate', 1e-3)
@@ -136,20 +113,12 @@ def adam(x, dx, config=None):
     config.setdefault('t', 0)
 
     next_x = None
-    ###########################################################################
-    # TODO: Implement the Adam update formula, storing the next value of x in #
-    # the next_x variable. Don't forget to update the m, v, and t variables   #
-    # stored in config.                                                       #
-    ###########################################################################
     config['m'] = config['beta1'] * config['m'] + (1 - config['beta1']) * dx
     config['v'] = config['beta2'] * config['v'] + (1 - config['beta2']) * (dx ** 2)
     # m/v 初值为零会造成初期低估；先递增时间步，再分别进行偏差校正。
-    config['t'] += 1
-    m_hat = config['m'] / (1 - config['beta1'] ** config['t'])
-    v_hat = config['v'] / (1 - config['beta2'] ** config['t'])
+    config['t'] += 1  # 这是该参数的更新次数。先从零递增，再用它计算一阶、二阶矩的初值偏差校正。
+    m_hat = config['m'] / (1 - config['beta1'] ** config['t'])  # 一阶矩初值为零，除以 1−β₁ᵗ 校正前几次更新中均值被压小的效应。
+    v_hat = config['v'] / (1 - config['beta2'] ** config['t'])  # 二阶矩同样进行初值校正；随后开平方得到逐坐标的梯度尺度。
     next_x = x - config['learning_rate'] * m_hat / (np.sqrt(v_hat) + config['epsilon'])
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
 
     return next_x, config

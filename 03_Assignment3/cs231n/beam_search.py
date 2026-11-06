@@ -36,16 +36,16 @@ def beam_decode(model,features,width=3,alpha=.6,max_length=30):
         log_probs[:,:,end]=torch.where(finished,torch.zeros_like(cumulative),log_probs[:,:,end])
         candidate_lengths=lengths+(~finished).long()
         raw=cumulative[:,:,None]+log_probs
-        normalized=raw/candidate_lengths.clamp_min(1).to(raw.dtype)[:,:,None].pow(alpha)
+        normalized=raw/candidate_lengths.clamp_min(1).to(raw.dtype)[:,:,None].pow(alpha)  # 用长度归一化后的分数选择候选，但下一步继续累加的仍应是未归一化的 log 概率。
         selected=normalized.reshape(n,-1).topk(width,dim=-1).indices
-        parents=selected//vocab;tokens=selected%vocab
+        parents=selected//vocab;tokens=selected%vocab  # 展平候选索引由 父候选号×词表大小＋词号 构成，整除恢复父候选编号。
         cumulative=raw.reshape(n,-1).gather(1,selected)
         lengths=candidate_lengths.gather(1,parents)
         finished=finished.gather(1,parents)|(tokens==end)
         sequences=sequences.gather(1,parents[:,:,None].expand(-1,-1,max_length))
         sequences[:,:,t]=tokens
-        gather_indices=(parents+batch_offsets).reshape(-1)
-        state=tuple(s.index_select(1,gather_indices).contiguous() for s in next_state) if isinstance(next_state,tuple) else next_state.index_select(1,gather_indices).contiguous()
+        gather_indices=(parents+batch_offsets).reshape(-1)  # 加上各图片在展平批次中的偏移，确保第 n 张图只选择自己的父状态。
+        state=tuple(s.index_select(1,gather_indices).contiguous() for s in next_state) if isinstance(next_state,tuple) else next_state.index_select(1,gather_indices).contiguous()  # LSTM 的 h 和 c 都必须随父候选重排；只重排输出词会把另一条句子的历史状态传下去。
         words=tokens
         if bool(finished.all()):break
     best=(cumulative/lengths.clamp_min(1).to(cumulative.dtype).pow(alpha)).argmax(dim=1)

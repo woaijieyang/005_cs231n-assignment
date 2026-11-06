@@ -3,71 +3,44 @@ from builtins import range
 import numpy as np
 
 """
-This file defines layer types that are commonly used for recurrent neural
+此文件定义了经常用于神经元的图层类型
 networks.
 """
 
 
-# 中文数据流：输入 x(N,D)、prev_h(N,H) 及两组权重，计算 next_h=tanh(xWx+prev_hWh+b)。输出隐藏状态和反向缓存，不在单步函数内修改训练参数。
+# 输入 x(N,D)、prev_h(N,H) 及两组权重，计算 next_h=tanh(xWx+prev_hWh+b)。输出隐藏状态和反向缓存，不在单步函数内修改训练参数。
 def rnn_step_forward(x, prev_h, Wx, Wh, b):
-    """
-    Run the forward pass for a single timestep of a vanilla RNN that uses a tanh
-    activation function.
+    """输入 x(N,D)、prev_h(N,H) 及两组权重，计算 next_h=tanh(xWx+prev_hWh+b)。输出隐藏状态和反向缓存，不在单步函数内修改训练参数。
 
-    The input data has dimension D, the hidden state has dimension H, and we use
-    a minibatch size of N.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - prev_h：上一时间步的隐藏状态。
+    - Wx：从输入到隐藏状态的权重。
+    - Wh：从前一隐藏状态到当前状态的权重。
+    - b：与输出维对齐的偏置。
 
-    Inputs:
-    - x: Input data for this timestep, of shape (N, D).
-    - prev_h: Hidden state from previous timestep, of shape (N, H)
-    - Wx: Weight matrix for input-to-hidden connections, of shape (D, H)
-    - Wh: Weight matrix for hidden-to-hidden connections, of shape (H, H)
-    - b: Biases of shape (H,)
-
-    Returns a tuple of:
-    - next_h: Next hidden state, of shape (N, H)
-    - cache: Tuple of values needed for the backward pass.
+    返回表达式：(next_h, cache)。
     """
     next_h, cache = None, None
-    ##############################################################################
-    # TODO: Implement a single forward step for the vanilla RNN. Store the next  #
-    # hidden state and any values you need for the backward pass in the next_h   #
-    # and cache variables respectively.                                          #
-    ##############################################################################
     # 前向传播
     # ht=tanh(Wx@Xt+Wh@ht-1+b)
     next_h = np.tanh(x.dot(Wx) + prev_h.dot(Wh) + b)
 
     cache = (x, prev_h, Wx, Wh, b, next_h)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return next_h, cache
 
 
-# 中文数据流：输入 dnext_h 和单步 cache，先乘 tanh 导数，再分别沿 xWx 与 hWh 回传。返回 dx、dprev_h、dWx、dWh、db，权重梯度在 batch 轴聚合。
+# 输入 dnext_h 和单步 cache，先乘 tanh 导数，再分别沿 xWx 与 hWh 回传。返回 dx、dprev_h、dWx、dWh、db，权重梯度在 batch 轴聚合。
 def rnn_step_backward(dnext_h, cache):
-    """
-    Backward pass for a single timestep of a vanilla RNN.
+    """输入 dnext_h 和单步 cache，先乘 tanh 导数，再分别沿 xWx 与 hWh 回传。返回 dx、dprev_h、dWx、dWh、db，权重梯度在 batch 轴聚合。
 
-    Inputs:
-    - dnext_h: Gradient of loss with respect to next hidden state
-    - cache: Cache object from the forward pass
+    参数在本函数中的角色：
+    - dnext_h：下一隐藏状态收到的上游梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Returns a tuple of:
-    - dx: Gradients of input data, of shape (N, D)
-    - dprev_h: Gradients of previous hidden state, of shape (N, H)
-    - dWx: Gradients of input-to-hidden weights, of shape (D, H)
-    - dWh: Gradients of hidden-to-hidden weights, of shape (H, H)
-    - db: Gradients of bias vector, of shape (H,)
+    返回表达式：(dx, dprev_h, dWx, dWh, db)。
     """
     dx, dprev_h, dWx, dWh, db = None, None, None, None, None
-    ##############################################################################
-    # TODO: Implement the backward pass for a single step of a vanilla RNN.      #
-    #                                                                            #
-    # HINT: For the tanh function, you can compute the local derivative in terms #
-    # of the output value from tanh.                                             #
-    ##############################################################################
     x, prev_h, Wx, Wh, b, next_h = cache
     # 反向传播先经过tanh
     dtanh = dnext_h * (1 - next_h ** 2)  # (N,H)
@@ -81,37 +54,23 @@ def rnn_step_backward(dnext_h, cache):
     dprev_h = dtanh.dot(Wh.T)  # (N,H) * (H,H)= (N,H)
 
     dx = dtanh.dot(Wx.T)  # (N,H)*(H,D)=(N,D)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return dx, dprev_h, dWx, dWh, db
 
 
-# 中文数据流：输入完整序列 (N,T,D) 和初始隐藏状态，从 t=0 递推到 T−1。每步共享同一组 Wx、Wh、b，输出所有时刻隐藏状态并按时间保存 cache。
+# 输入完整序列 (N,T,D) 和初始隐藏状态，从 t=0 递推到 T−1。每步共享同一组 Wx、Wh、b，输出所有时刻隐藏状态并按时间保存 cache。
 def rnn_forward(x, h0, Wx, Wh, b):
-    """
-    Run a vanilla RNN forward on an entire sequence of data. We assume an input
-    sequence composed of T vectors, each of dimension D. The RNN uses a hidden
-    size of H, and we work over a minibatch containing N sequences. After running
-    the RNN forward, we return the hidden states for all timesteps.
+    """输入完整序列 (N,T,D) 和初始隐藏状态，从 t=0 递推到 T−1。每步共享同一组 Wx、Wh、b，输出所有时刻隐藏状态并按时间保存 cache。
 
-    Inputs:
-    - x: Input data for the entire timeseries, of shape (N, T, D).
-    - h0: Initial hidden state, of shape (N, H)
-    - Wx: Weight matrix for input-to-hidden connections, of shape (D, H)
-    - Wh: Weight matrix for hidden-to-hidden connections, of shape (H, H)
-    - b: Biases of shape (H,)
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - h0：第一个时间步之前的隐藏状态。
+    - Wx：从输入到隐藏状态的权重。
+    - Wh：从前一隐藏状态到当前状态的权重。
+    - b：与输出维对齐的偏置。
 
-    Returns a tuple of:
-    - h: Hidden states for the entire timeseries, of shape (N, T, H).
-    - cache: Values needed in the backward pass
+    返回表达式：(h, cache)。
     """
     h, cache = None, None
-    ##############################################################################
-    # TODO: Implement forward pass for a vanilla RNN running on a sequence of    #
-    # input data. You should use the rnn_step_forward function that you defined  #
-    # above. You can use a for loop to help compute the forward pass.            #
-    ##############################################################################
     N, T, D = x.shape
     h = np.zeros((N, T, h0.shape[1]))
     cache = []
@@ -120,33 +79,20 @@ def rnn_forward(x, h0, Wx, Wh, b):
         ht, cache_step = rnn_step_forward(x[:, t, :], ht, Wx, Wh, b)
         h[:, t, :] = ht
         cache.append(cache_step)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return h, cache
 
 
-# 中文数据流：从最后时刻往前遍历，把当前输出梯度与未来状态回传梯度相加。各时间步的共享权重梯度累加，最终回传到 h0，并返回完整 dx(N,T,D)。
+# 从最后时刻往前遍历，把当前输出梯度与未来状态回传梯度相加。各时间步的共享权重梯度累加，最终回传到 h0，并返回完整 dx(N,T,D)。
 def rnn_backward(dh, cache):
-    """
-    Compute the backward pass for a vanilla RNN over an entire sequence of data.
+    """从最后时刻往前遍历，把当前输出梯度与未来状态回传梯度相加。各时间步的共享权重梯度累加，最终回传到 h0，并返回完整 dx(N,T,D)。
 
-    Inputs:
-    - dh: Upstream gradients of all hidden states, of shape (N, T, H)
+    参数在本函数中的角色：
+    - dh：所有时间步隐藏状态收到的上游梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Returns a tuple of:
-    - dx: Gradient of inputs, of shape (N, T, D)
-    - dh0: Gradient of initial hidden state, of shape (N, H)
-    - dWx: Gradient of input-to-hidden weights, of shape (D, H)
-    - dWh: Gradient of hidden-to-hidden weights, of shape (H, H)
-    - db: Gradient of biases, of shape (H,)
+    返回表达式：(dx, dh0, dWx, dWh, db)。
     """
     dx, dh0, dWx, dWh, db = None, None, None, None, None
-    ##############################################################################
-    # TODO: Implement the backward pass for a vanilla RNN running an entire      #
-    # sequence of data. You should use the rnn_step_backward function that you   #
-    # defined above. You can use a for loop to help compute the backward pass.   #
-    ##############################################################################
     N, T, H = dh.shape
     D = cache[0][0].shape[1]
     dx = np.zeros((N, T, D))
@@ -158,87 +104,60 @@ def rnn_backward(dh, cache):
     #
     for t in reversed(range(T)):
         # 这里的dout包含两部分从上面过来的dh，还有从右边过来的之前算出来的dpre_h(对于当前就是dnext_h)
-        dnext_h = dh[:, t, :] + dprev_h
+        dnext_h = dh[:, t, :] + dprev_h  # 同一隐藏状态有两条去路：本时刻输出，以及下一时刻的递推。求导时两路梯度相加。
         dx[:, t, :], dprev_h, dWxt, dWht, dbt = rnn_step_backward(dnext_h, cache.pop())
         # 参数共享累加
-        dWx += dWxt
+        dWx += dWxt  # 同一权重在所有时间步共用，因此每一步算出的权重梯度都要累加。
         dWh += dWht
         db += dbt
         # 迭代到最后即为h0
         dh0 = dprev_h
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return dx, dh0, dWx, dWh, db
 
 
-# 中文数据流：用整数词索引 x(N,T) 从词向量矩阵 W(V,D) 逐位置查表，输出 (N,T,D)。索引本身不可求导，学习对象是被选中的词向量行。
+# 用整数词索引 x(N,T) 从词向量矩阵 W(V,D) 逐位置查表，输出 (N,T,D)。索引本身不可求导，学习对象是被选中的词向量行。
 def word_embedding_forward(x, W):
-    """
-    Forward pass for word embeddings. We operate on minibatches of size N where
-    each sequence has length T. We assume a vocabulary of V words, assigning each
-    to a vector of dimension D.
+    """用整数词索引 x(N,T) 从词向量矩阵 W(V,D) 逐位置查表，输出 (N,T,D)。索引本身不可求导，学习对象是被选中的词向量行。
 
-    Inputs:
-    - x: Integer array of shape (N, T) giving indices of words. Each element idx
-      of x muxt be in the range 0 <= idx < V.
-    - W: Weight matrix of shape (V, D) giving word vectors for all words.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - W：权重矩阵。
 
-    Returns a tuple of:
-    - out: Array of shape (N, T, D) giving word vectors for all input words.
-    - cache: Values needed for the backward pass
+    返回表达式：(out, cache)。
     """
     out, cache = None, None
-    ##############################################################################
-    # TODO: Implement the forward pass for word embeddings.                      #
-    #                                                                            #
-    # HINT: This can be done in one line using NumPy's array indexing.           #
-    ##############################################################################
     out = W[x]
     cache = (x, W)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return out, cache
 
 
-# 中文数据流：对重复词索引的初始版本梯度累加到同一 dW 行；使用可处理重复索引的累加方式，避免普通索引赋值丢掉重复贡献。
+# 对重复词索引的初始版本梯度累加到同一 dW 行；使用可处理重复索引的累加方式，避免普通索引赋值丢掉重复贡献。
 def word_embedding_backward(dout, cache):
-    """
-    Backward pass for word embeddings. We cannot back-propagate into the words
-    since they are integers, so we only return gradient for the word embedding
-    matrix.
+    """对重复词索引的初始版本梯度累加到同一 dW 行；使用可处理重复索引的累加方式，避免普通索引赋值丢掉重复贡献。
 
-    HINT: Look up the function np.add.at
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Inputs:
-    - dout: Upstream gradients of shape (N, T, D)
-    - cache: Values from the forward pass
-
-    Returns:
-    - dW: Gradient of word embedding matrix, of shape (V, D).
+    返回表达式：dW。
     """
     dW = None
-    ##############################################################################
-    # TODO: Implement the backward pass for word embeddings.                     #
-    #                                                                            #
-    # Note that Words can appear more than once in a sequence.                   #
-    # HINT: Look up the function np.add.at                                       #
-    ##############################################################################
     x, W = cache
     N, T, D = dout.shape
     dW = np.zeros(W.shape)
+    # 词号可能重复。每次出现都要把对应的上游梯度加到同一词向量行，普通高级索引赋值会漏掉重复贡献。
     np.add.at(dW, x.flatten(), dout.reshape(-1, D))  # 按照x的下标给出dout
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
     return dW
 
 
-# 中文数据流：按正负输入分别计算 sigmoid，避免 exp 在极大负数或正数处溢出。输入输出形状一致，门控输出范围为 (0,1)。
+# 按正负输入分别计算 sigmoid，避免 exp 在极大负数或正数处溢出。输入输出形状一致，门控输出范围为 (0,1)。
 def sigmoid(x):
-    """
-    A numerically stable version of the logistic sigmoid function.
+    """按正负输入分别计算 sigmoid，避免 exp 在极大负数或正数处溢出。输入输出形状一致，门控输出范围为 (0,1)。
+
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+
+    返回表达式：top / (1 + z)。
     """
     pos_mask = (x >= 0)
     neg_mask = (x < 0)
@@ -250,85 +169,59 @@ def sigmoid(x):
     return top / (1 + z)
 
 
-# 中文数据流：把线性输出分为 i/f/o/g 四块；前三块 sigmoid，候选记忆 tanh。通过 c_next=f*c_prev+i*g 和 h_next=o*tanh(c_next) 更新，缓存门值和状态供反向。
+# 把线性输出分为 i/f/o/g 四块；前三块 sigmoid，候选记忆 tanh。通过 c_next=f*c_prev+i*g 和 h_next=o*tanh(c_next) 更新，缓存门值和状态供反向。
 def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
-    """
-    Forward pass for a single timestep of an LSTM.
+    """把线性输出分为 i/f/o/g 四块；前三块 sigmoid，候选记忆 tanh。通过 c_next=f*c_prev+i*g 和 h_next=o*tanh(c_next) 更新，缓存门值和状态供反向。
 
-    The input data has dimension D, the hidden state has dimension H, and we use
-    a minibatch size of N.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - prev_h：上一时间步的隐藏状态。
+    - prev_c：上一时间步的细胞状态。
+    - Wx：从输入到隐藏状态的权重。
+    - Wh：从前一隐藏状态到当前状态的权重。
+    - b：与输出维对齐的偏置。
 
-    Inputs:
-    - x: Input data, of shape (N, D)
-    - prev_h: Previous hidden state, of shape (N, H)
-    - prev_c: previous cell state, of shape (N, H)
-    - Wx: Input-to-hidden weights, of shape (D, 4H)
-    - Wh: Hidden-to-hidden weights, of shape (H, 4H)
-    - b: Biases, of shape (4H,)
-
-    Returns a tuple of:
-    - next_h: Next hidden state, of shape (N, H)
-    - next_c: Next cell state, of shape (N, H)
-    - cache: Tuple of values needed for backward pass.
+    返回表达式：(next_h, next_c, cache)。
     """
     next_h, next_c, cache = None, None, None
-    #############################################################################
-    # TODO: Implement the forward pass for a single timestep of an LSTM.        #
-    # You may want to use the numerically stable sigmoid implementation above.  #
-    #############################################################################
     H = prev_h.shape[1]
-    z = x.dot(Wx) + prev_h.dot(Wh) + b
-    i = sigmoid(z[:, 0:H])
-    f = sigmoid(z[:, H:2 * H])
-    o = sigmoid(z[:, 2 * H:3 * H])
-    g = np.tanh(z[:, 3 * H:4 * H])
-    next_c = f * prev_c + i * g
-    next_h = o * np.tanh(next_c)
+    z = x.dot(Wx) + prev_h.dot(Wh) + b  # 输入和上一隐藏状态先投影到 4H 维。后面的四个切片必须共用相同的门顺序。
+    i = sigmoid(z[:, 0:H])  # 输入门决定写入多少候选记忆，取值在 0 和 1 之间。
+    f = sigmoid(z[:, H:2 * H])  # 遗忘门逐维控制上一细胞状态保留多少。
+    o = sigmoid(z[:, 2 * H:3 * H])  # 第三块是输出门；这里的顺序与框架 LSTM 不同，转移权重时要交换对应块。
+    g = np.tanh(z[:, 3 * H:4 * H])  # 最后一块用 tanh 产生可正可负的候选内容，不能改用 sigmoid。
+    next_c = f * prev_c + i * g  # 旧记忆经 f 保留，新候选经 i 写入。这里是逐元素相乘，四个张量都按样本和隐藏维对齐。
+    next_h = o * np.tanh(next_c)  # 输出门控制暴露给下一层的部分，细胞状态仍单独传给下一时间步。
     cache = (i, f, o, g, next_c, prev_c, prev_h, Wx, Wh, x)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
 
     return next_h, next_c, cache
 
 
-# 中文数据流：先汇合 h_next 和未来 c_next 对细胞状态的梯度，再分别回传 i/f/o/g。按与前向一致的门顺序拼接 dz，计算输入、前状态和权重梯度。
+# 先汇合 h_next 和未来 c_next 对细胞状态的梯度，再分别回传 i/f/o/g。按与前向一致的门顺序拼接 dz，计算输入、前状态和权重梯度。
 def lstm_step_backward(dnext_h, dnext_c, cache):
-    """
-    Backward pass for a single timestep of an LSTM.
+    """先汇合 h_next 和未来 c_next 对细胞状态的梯度，再分别回传 i/f/o/g。按与前向一致的门顺序拼接 dz，计算输入、前状态和权重梯度。
 
-    Inputs:
-    - dnext_h: Gradients of next hidden state, of shape (N, H)
-    - dnext_c: Gradients of next cell state, of shape (N, H)
-    - cache: Values from the forward pass
+    参数在本函数中的角色：
+    - dnext_h：下一隐藏状态收到的上游梯度。
+    - dnext_c：下一细胞状态收到的上游梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Returns a tuple of:
-    - dx: Gradient of input data, of shape (N, D)
-    - dprev_h: Gradient of previous hidden state, of shape (N, H)
-    - dprev_c: Gradient of previous cell state, of shape (N, H)
-    - dWx: Gradient of input-to-hidden weights, of shape (D, 4H)
-    - dWh: Gradient of hidden-to-hidden weights, of shape (H, 4H)
-    - db: Gradient of biases, of shape (4H,)
+    返回表达式：(dx, dprev_h, dprev_c, dWx, dWh, db)。
     """
     dx, dh, dc, dWx, dWh, db = None, None, None, None, None, None
-    #############################################################################
-    # TODO: Implement the backward pass for a single timestep of an LSTM.       #
-    #                                                                           #
-    # HINT: For sigmoid and tanh you can compute local derivatives in terms of  #
-    # the output value from the nonlinearity.                                   #
-    #############################################################################
     i, f, o, g, next_c, prev_c, prev_h, Wx, Wh, x = cache
     # o只接收Ct的梯度流
     do = dnext_h * np.tanh(next_c) * o * (1 - o)
     # Ct经过tanh其返回的梯度流记作dtanhc
     dtanh_c = dnext_h * o * (1 - np.tanh(next_c) ** 2)
     # i,f,g，接收dnext_c和dtanh_c两个梯度流
-    dnext_out = dnext_c + dtanh_c
+    dnext_out = dnext_c + dtanh_c  # 来自未来细胞状态的梯度与从当前隐藏状态经过 tanh 回来的梯度在这里汇合。
     di = dnext_out * g * i * (1 - i)
     df = dnext_out * prev_c * f * (1 - f)
     dg = dnext_out * i * (1 - g ** 2)
     dprev_c = dnext_out * f
     # 把di,df,do,dg连接起来构成dz
+    # 按前向 i/f/o/g 顺序拼回 N×4H，随后才能与 Wx、Wh 的对应列相乘。
     dz = np.hstack((di, df, do, dg))  # (N, 4H)
     # 线性部分Wx * Xt +Wh * ht-1 + b = z
     dWx = x.T.dot(dz)  # (D,N) * (N,4H)
@@ -336,41 +229,24 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     db = np.sum(dz, axis=0)
     dprev_h = dz.dot(Wh.T)  # (N,4H) * (4H,H) =(N,H)
     dx = dz.dot(Wx.T)  # =(N,4H) * (4H,H) =(N,H)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
 
     return dx, dprev_h, dprev_c, dWx, dWh, db
 
 
-# 中文数据流：以 h0 和全零 c0 开始逐词更新 LSTM，保存每个时间步的 gate/cache。输出 (N,T,H) 隐藏序列，词表投影在外部统一执行。
+# 以 h0 和全零 c0 开始逐词更新 LSTM，保存每个时间步的 gate/cache。输出 (N,T,H) 隐藏序列，词表投影在外部统一执行。
 def lstm_forward(x, h0, Wx, Wh, b):
-    """
-    Forward pass for an LSTM over an entire sequence of data. We assume an input
-    sequence composed of T vectors, each of dimension D. The LSTM uses a hidden
-    size of H, and we work over a minibatch containing N sequences. After running
-    the LSTM forward, we return the hidden states for all timesteps.
+    """以 h0 和全零 c0 开始逐词更新 LSTM，保存每个时间步的 gate/cache。输出 (N,T,H) 隐藏序列，词表投影在外部统一执行。
 
-    Note that the initial cell state is passed as input, but the initial cell
-    state is set to zero. Also note that the cell state is not returned; it is
-    an internal variable to the LSTM and is not accessed from outside.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - h0：第一个时间步之前的隐藏状态。
+    - Wx：从输入到隐藏状态的权重。
+    - Wh：从前一隐藏状态到当前状态的权重。
+    - b：与输出维对齐的偏置。
 
-    Inputs:
-    - x: Input data of shape (N, T, D)
-    - h0: Initial hidden state of shape (N, H)
-    - Wx: Weights for input-to-hidden connections, of shape (D, 4H)
-    - Wh: Weights for hidden-to-hidden connections, of shape (H, 4H)
-    - b: Biases of shape (4H,)
-
-    Returns a tuple of:
-    - h: Hidden states for all timesteps of all sequences, of shape (N, T, H)
-    - cache: Values needed for the backward pass.
+    返回表达式：(h, cache)。
     """
     h, cache = None, None
-    #############################################################################
-    # TODO: Implement the forward pass for an LSTM over an entire timeseries.   #
-    # You should use the lstm_step_forward function that you just defined.      #
-    #############################################################################
     N, T, D = x.shape
     H = h0.shape[1]
     prev_h = h0
@@ -383,34 +259,21 @@ def lstm_forward(x, h0, Wx, Wh, b):
         prev_h = next_h
         prev_c = next_c
         cache.append(cache_step)
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
 
     return h, cache
 
 
-# 中文数据流：逆序传递隐藏与细胞两条状态梯度；共享 Wx、Wh、b 的导数对时间求和。返回 dx、dh0 和三组参数梯度，不能遗漏跨时间的 dnext_c。
+# 逆序传递隐藏与细胞两条状态梯度；共享 Wx、Wh、b 的导数对时间求和。返回 dx、dh0 和三组参数梯度，不能遗漏跨时间的 dnext_c。
 def lstm_backward(dh, cache):
-    """
-    Backward pass for an LSTM over an entire sequence of data.]
+    """逆序传递隐藏与细胞两条状态梯度；共享 Wx、Wh、b 的导数对时间求和。返回 dx、dh0 和三组参数梯度，不能遗漏跨时间的 dnext_c。
 
-    Inputs:
-    - dh: Upstream gradients of hidden states, of shape (N, T, H)
-    - cache: Values from the forward pass
+    参数在本函数中的角色：
+    - dh：所有时间步隐藏状态收到的上游梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Returns a tuple of:
-    - dx: Gradient of input data of shape (N, T, D)
-    - dh0: Gradient of initial hidden state of shape (N, H)
-    - dWx: Gradient of input-to-hidden weight matrix of shape (D, 4H)
-    - dWh: Gradient of hidden-to-hidden weight matrix of shape (H, 4H)
-    - db: Gradient of biases, of shape (4H,)
+    返回表达式：(dx, dh0, dWx, dWh, db)。
     """
     dx, dh0, dWx, dWh, db = None, None, None, None, None
-    #############################################################################
-    # TODO: Implement the backward pass for an LSTM over an entire timeseries.  #
-    # You should use the lstm_step_backward function that you just defined.     #
-    #############################################################################
     N, T, H = dh.shape
     _, D = cache[0][-1].shape
     dprev_h = np.zeros((N, H))
@@ -422,39 +285,30 @@ def lstm_backward(dh, cache):
     dnext_c = np.zeros((N, H))
     for t in reversed(range(T)):
         # 和RNN同理，LSTM的dout包含两部分从上面过来的dh，还有从右边过来的之前算出来的dpre_h(对于当前就是dnext_h)
-        dnext_h = dh[:, t, :] + dprev_h
+        dnext_h = dh[:, t, :] + dprev_h  # 同一隐藏状态有两条去路：本时刻输出，以及下一时刻的递推。求导时两路梯度相加。
         dx[:, t, :], dprev_h, dprev_c, dWxt, dWht, dbt = lstm_step_backward(dnext_h, dnext_c, cache[t])
         # 每次需要迭代Ct
         dnext_c = dprev_c
         # 参数共享
-        dWx += dWxt
+        dWx += dWxt  # 同一权重在所有时间步共用，因此每一步算出的权重梯度都要累加。
         dWh += dWht
         db += dbt
         # 迭代到最后即为h0
         dh0 = dprev_h
-    ##############################################################################
-    #                               END OF YOUR CODE                             #
-    ##############################################################################
 
     return dx, dh0, dWx, dWh, db
 
 
-# 中文数据流：将 (N,T,D) 展平为 (N·T,D) 后乘共享投影矩阵，恢复 (N,T,M) 并加偏置。所有时间步使用同一个词表映射。
+# 将 (N,T,D) 展平为 (N·T,D) 后乘共享投影矩阵，恢复 (N,T,M) 并加偏置。所有时间步使用同一个词表映射。
 def temporal_affine_forward(x, w, b):
-    """
-    Forward pass for a temporal affine layer. The input is a set of D-dimensional
-    vectors arranged into a minibatch of N timeseries, each of length T. We use
-    an affine function to transform each of those vectors into a new vector of
-    dimension M.
+    """将 (N,T,D) 展平为 (N·T,D) 后乘共享投影矩阵，恢复 (N,T,M) 并加偏置。所有时间步使用同一个词表映射。
 
-    Inputs:
-    - x: Input data of shape (N, T, D)
-    - w: Weights of shape (D, M)
-    - b: Biases of shape (M,)
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - w：本层的权重。
+    - b：与输出维对齐的偏置。
 
-    Returns a tuple of:
-    - out: Output data of shape (N, T, M)
-    - cache: Values needed for the backward pass
+    返回表达式：(out, cache)。
     """
     N, T, D = x.shape
     M = b.shape[0]
@@ -463,19 +317,15 @@ def temporal_affine_forward(x, w, b):
     return out, cache
 
 
-# 中文数据流：把 dout(N,T,M) 展平，对输入与共享权重求导；db 同时沿样本和时间轴求和。输出恢复原序列形状。
+# 把 dout(N,T,M) 展平，对输入与共享权重求导；db 同时沿样本和时间轴求和。输出恢复原序列形状。
 def temporal_affine_backward(dout, cache):
-    """
-    Backward pass for temporal affine layer.
+    """把 dout(N,T,M) 展平，对输入与共享权重求导；db 同时沿样本和时间轴求和。输出恢复原序列形状。
 
-    Input:
-    - dout: Upstream gradients of shape (N, T, M)
-    - cache: Values from forward pass
+    参数在本函数中的角色：
+    - dout：后续层传回的输出梯度。
+    - cache：本层前向为反向计算保留的中间值。
 
-    Returns a tuple of:
-    - dx: Gradient of input, of shape (N, T, D)
-    - dw: Gradient of weights, of shape (D, M)
-    - db: Gradient of biases, of shape (M,)
+    返回表达式：(dx, dw, db)。
     """
     x, w, b, out = cache
     N, T, D = x.shape
@@ -488,47 +338,31 @@ def temporal_affine_backward(dout, cache):
     return dx, dw, db
 
 
-# 中文数据流：计算每个时间位置的交叉熵，用 mask 屏蔽 NULL 填充，再对 batch 数 N 平均。输出对 logits 的梯度也乘同一 mask，因此填充位置不会更新参数。
+# 计算每个时间位置的交叉熵，用 mask 屏蔽 NULL 填充，再对 batch 数 N 平均。输出对 logits 的梯度也乘同一 mask，因此填充位置不会更新参数。
 def temporal_softmax_loss(x, y, mask, verbose=False):
-    """
-    A temporal version of softmax loss for use in RNNs. We assume that we are
-    making predictions over a vocabulary of size V for each timestep of a
-    timeseries of length T, over a minibatch of size N. The input x gives scores
-    for all vocabulary elements at all timesteps, and y gives the indices of the
-    ground-truth element at each timestep. We use a cross-entropy loss at each
-    timestep, summing the loss over all timesteps and averaging across the
-    minibatch.
+    """计算每个时间位置的交叉熵，用 mask 屏蔽 NULL 填充，再对 batch 数 N 平均。输出对 logits 的梯度也乘同一 mask，因此填充位置不会更新参数。
 
-    As an additional complication, we may want to ignore the model output at some
-    timesteps, since sequences of different length may have been combined into a
-    minibatch and padded with NULL tokens. The optional mask argument tells us
-    which elements should contribute to the loss.
+    参数在本函数中的角色：
+    - x：进入该层的输入特征。
+    - y：每个样本对应的整数类别标签。
+    - mask：标记哪些位置参与当前运算的掩码。
 
-    Inputs:
-    - x: Input scores, of shape (N, T, V)
-    - y: Ground-truth indices, of shape (N, T) where each element is in the range
-         0 <= y[i, t] < V
-    - mask: Boolean array of shape (N, T) where mask[i, t] tells whether or not
-      the scores at x[i, t] should contribute to the loss.
-
-    Returns a tuple of:
-    - loss: Scalar giving loss
-    - dx: Gradient of loss with respect to scores x.
+    返回表达式：(loss, dx)。
     """
 
     N, T, V = x.shape
 
     x_flat = x.reshape(N * T, V)
     y_flat = y.reshape(N * T)
-    mask_flat = mask.reshape(N * T)
+    mask_flat = mask.reshape(N * T)  # 和字幕、词表得分使用完全相同的展平顺序，使掩码的每一项对应正确的时间位置。
 
     probs = np.exp(x_flat - np.max(x_flat, axis=1, keepdims=True))
     probs /= np.sum(probs, axis=1, keepdims=True)
     loss = -np.sum(mask_flat * np.log(probs[np.arange(N * T), y_flat])) / N
     dx_flat = probs.copy()
-    dx_flat[np.arange(N * T), y_flat] -= 1
+    dx_flat[np.arange(N * T), y_flat] -= 1  # 每一行对应一个样本的一个时间步。在真实词那一列减一，得到 P−Y。
     dx_flat /= N
-    dx_flat *= mask_flat[:, None]
+    dx_flat *= mask_flat[:, None]  # 掩码从 NT 变为 NT×1，广播到全部词类；同一填充位置的 V 个梯度全部清零。
 
     if verbose: print('dx_flat: ', dx_flat.shape)
 

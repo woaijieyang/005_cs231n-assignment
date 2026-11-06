@@ -4,9 +4,10 @@ import os
 from study_runtime import imread
 
 
-# 中文数据流：读取一个课程 pickle 批次，将扁平像素转成 (10000,32,32,3) HWC 浮点数组，标签转一维整数数组。原文件只读，所有预处理在内存中完成。
+# 读取一个课程 pickle 批次，
+# 将扁平像素转成 (10000,32,32,3) HWC 浮点数组，标签转一维整数数组。原文件只读，所有预处理在内存中完成。
 def load_CIFAR_batch(filename):
-    """ load single batch of cifar """
+    """ 读取 CIFAR-10 的一个数据批次。"""
     with open(filename, 'rb') as f:
         datadict = pickle.load(f, encoding='iso-8859-1')
         X = datadict['data']
@@ -16,11 +17,11 @@ def load_CIFAR_batch(filename):
         return X, Y
 
 
-# 中文数据流：从共享配置解析实际目录，拼接五个训练批次并读取测试批次。输出原始图像/标签，不在这个函数内混合训练与测试统计。
+# 从共享配置解析实际目录，拼接五个训练批次并读取测试批次。输出原始图像/标签，不在这个函数内混合训练与测试统计。
 def load_CIFAR10(ROOT):
     from study_runtime import data_path
     ROOT = str(data_path("cifar10"))
-    """ load all of cifar """
+    """ 读取完整 CIFAR-10 训练和测试数据。"""
     xs = []
     ys = []
     for b in range(1, 6):
@@ -36,47 +37,28 @@ def load_CIFAR10(ROOT):
 
 
 def load_tiny_imagenet(path, dtype=np.float32):
-    """
-    Load TinyImageNet. Each of TinyImageNet-100-A, TinyImageNet-100-B, and
-    TinyImageNet-200 have the same directory structure, so this can be used
-    to load any of them.
-
-    Inputs:
-    - path: String giving path to the directory to load.
-    - dtype: numpy datatype used to load the data.
-
-    Returns: A tuple of
-    - class_names: A list where class_names[i] is a list of strings giving the
-      WordNet names for class i in the loaded dataset.
-    - X_train: (N_tr, 3, 64, 64) array of training images
-    - y_train: (N_tr,) array of training labels
-    - X_val: (N_val, 3, 64, 64) array of validation images
-    - y_val: (N_val,) array of validation labels
-    - X_test: (N_test, 3, 64, 64) array of testing images.
-    - y_test: (N_test,) array of test labels; if test labels are not available
-      (such as in student code) then y_test will be None.
-    """
-    # First load wnids
+    """读取类别编号、标注和图片，将类别字符串映射为整数索引，把图像转成 NCHW，并按各自划分返回图像与标签。本函数用于 TinyImageNet；本次 SqueezeNet 可视化读取的是 ImageNet 验证样例。"""
+    # 第一次负载wnids
     with open(os.path.join(path, 'wnids.txt'), 'r') as f:
         wnids = [x.strip() for x in f]
 
-    # Map wnids to integer labels
+    # 映射到整数标签
     wnid_to_label = {wnid: i for i, wnid in enumerate(wnids)}
 
-    # Use words.txt to get names for each class
+    # 使用单词.txt来获取每个类的名称
     with open(os.path.join(path, 'words.txt'), 'r') as f:
         wnid_to_words = dict(line.split('\t') for line in f)
         for wnid, words in wnid_to_words.items():
             wnid_to_words[wnid] = [w.strip() for w in words.split(',')]
     class_names = [wnid_to_words[wnid] for wnid in wnids]
 
-    # Next load training data.
+    # 下一个装入训练数据 。
     X_train = []
     y_train = []
     for i, wnid in enumerate(wnids):
         if (i + 1) % 20 == 0:
             print('loading training data for synset %d / %d' % (i + 1, len(wnids)))
-        # To figure out the filenames we need to open the boxes file
+        # 要找出文件名,我们需要打开框文件
         boxes_file = os.path.join(path, 'train', wnid, '%s_boxes.txt' % wnid)
         with open(boxes_file, 'r') as f:
             filenames = [x.split('\t')[0] for x in f]
@@ -88,17 +70,17 @@ def load_tiny_imagenet(path, dtype=np.float32):
             img_file = os.path.join(path, 'train', wnid, 'images', img_file)
             img = imread(img_file)
             if img.ndim == 2:
-                ## grayscale file
+                # 灰度文件
                 img.shape = (64, 64, 1)
             X_train_block[j] = img.transpose(2, 0, 1)
         X_train.append(X_train_block)
         y_train.append(y_train_block)
 
-    # We need to concatenate all training data
+    # 我们需要整理所有训练数据
     X_train = np.concatenate(X_train, axis=0)
     y_train = np.concatenate(y_train, axis=0)
 
-    # Next load validation data
+    # 下一个负载验证数据
     with open(os.path.join(path, 'val', 'val_annotations.txt'), 'r') as f:
         img_files = []
         val_wnids = []
@@ -116,9 +98,9 @@ def load_tiny_imagenet(path, dtype=np.float32):
                 img.shape = (64, 64, 1)
             X_val[i] = img.transpose(2, 0, 1)
 
-    # Next load test images
-    # Students won't have test labels, so we need to iterate over files in the
-    # images directory.
+    # 下次装入测试图像
+    # 学生不会有测试标签,所以我们需要删除文件
+    # 图像目录。
     img_files = os.listdir(os.path.join(path, 'test', 'images'))
     X_test = np.zeros((len(img_files), 3, 64, 64), dtype=dtype)
     for i, img_file in enumerate(img_files):
@@ -143,18 +125,7 @@ def load_tiny_imagenet(path, dtype=np.float32):
 
 
 def load_models(models_dir):
-    """
-    Load saved models from disk. This will attempt to unpickle all files in a
-    directory; any files that give errors on unpickling (such as README.txt) will
-    be skipped.
-
-    Inputs:
-    - models_dir: String giving the path to a directory containing model files.
-      Each model file is a pickled dictionary with a 'model' field.
-
-    Returns:
-    A dictionary mapping model file names to models.
-    """
+    """从指定目录逐文件读取保存的模型对象，按文件名建立字典。只应对已知来源的模型文件使用 pickle。"""
     models = {}
     for model_file in os.listdir(models_dir):
         with open(os.path.join(models_dir, model_file), 'rb') as f:

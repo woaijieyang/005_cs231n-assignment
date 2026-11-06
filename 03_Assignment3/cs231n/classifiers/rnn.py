@@ -7,32 +7,15 @@ from cs231n.rnn_layers import *
 
 
 class CaptioningRNN(object):
-    """
-    A CaptioningRNN produces captions from image features using a recurrent
-    neural network.
+    """用图像特征预测字幕。投影层把特征映射为初始隐藏状态，词嵌入把整数词号变为向量，循环层按时间处理序列，词表投影给出下一词得分。可选择普通 RNN 或 LSTM。"""
 
-    The RNN receives input vectors of size D, has a vocab size of V, works on
-    sequences of length T, has an RNN hidden dimension of H, uses word vectors
-    of dimension W, and operates on minibatches of size N.
-
-    Note that we don't use any regularization for the CaptioningRNN.
-    """
-
-    # 中文数据流：建立图像投影、词嵌入、循环状态和词表投影参数；RNN 循环矩阵宽 H，LSTM 为 4H。dtype 控制参数类型，词表包含 NULL/START/END 的语义索引。
+    # 建立图像投影、词嵌入、循环状态和词表投影参数；RNN 循环矩阵宽 H，LSTM 为 4H。dtype 控制参数类型，词表包含 NULL/START/END 的语义索引。
     def __init__(self, word_to_idx, input_dim=512, wordvec_dim=128,
                  hidden_dim=128, cell_type='rnn', dtype=np.float32):
-        """
-        Construct a new CaptioningRNN instance.
+        """建立图像投影、词嵌入、循环状态和词表投影参数；RNN 循环矩阵宽 H，LSTM 为 4H。dtype 控制参数类型，词表包含 NULL/START/END 的语义索引。
 
-        Inputs:
-        - word_to_idx: A dictionary giving the vocabulary. It contains V entries,
-          and maps each string to a unique integer in the range [0, V).
-        - input_dim: Dimension D of input image feature vectors.
-        - wordvec_dim: Dimension W of word vectors.
-        - hidden_dim: Dimension H for the hidden state of the RNN.
-        - cell_type: What type of RNN to use; either 'rnn' or 'lstm'.
-        - dtype: numpy datatype to use; use float32 for training and float64 for
-          numeric gradient checking.
+        参数在本函数中的角色：
+        - word_to_idx：从词字符串映射到整数编号的词表。
         """
         if cell_type not in {'rnn', 'lstm'}:
             raise ValueError('Invalid cell_type "%s"' % cell_type)
@@ -49,16 +32,16 @@ class CaptioningRNN(object):
         self._start = word_to_idx.get('<START>', None)
         self._end = word_to_idx.get('<END>', None)
 
-        # Initialize word vectors
+        # 初始化单词矢量
         self.params['W_embed'] = np.random.randn(vocab_size, wordvec_dim)
         self.params['W_embed'] /= 100
 
-        # Initialize CNN -> hidden state projection parameters
+        # 初始化 CNN -> 隐藏状态投影参数
         self.params['W_proj'] = np.random.randn(input_dim, hidden_dim)
         self.params['W_proj'] /= np.sqrt(input_dim)
         self.params['b_proj'] = np.zeros(hidden_dim)
 
-        # Initialize parameters for the RNN
+        # 初始化 RNN 参数
         dim_mul = {'lstm': 4, 'rnn': 1}[cell_type]
         self.params['Wx'] = np.random.randn(wordvec_dim, dim_mul * hidden_dim)
         self.params['Wx'] /= np.sqrt(wordvec_dim)
@@ -66,78 +49,51 @@ class CaptioningRNN(object):
         self.params['Wh'] /= np.sqrt(hidden_dim)
         self.params['b'] = np.zeros(dim_mul * hidden_dim)
 
-        # Initialize output to vocab weights
+        # 初始输出到 vocab 重
         self.params['W_vocab'] = np.random.randn(hidden_dim, vocab_size)
         self.params['W_vocab'] /= np.sqrt(hidden_dim)
         self.params['b_vocab'] = np.zeros(vocab_size)
 
-        # Cast parameters to correct dtype
+        # 要校正 dtype 的刻录参数
         for k, v in self.params.items():
             self.params[k] = v.astype(self.dtype)
 
-    # 中文数据流：图像特征投影为 h0，captions[:-1] 作为输入词，captions[1:] 为预测目标；循环输出经词表投影计算带 NULL 掩码的损失，再逐层手写反向。
+    # 图像特征投影为 h0，captions[:-1] 作为输入词，captions[1:] 为预测目标；循环输出经词表投影计算带 NULL 掩码的损失，再逐层手写反向。
     def loss(self, features, captions):
+        """图像特征投影为 h0，captions[:-1] 作为输入词，captions[1:] 为预测目标；循环输出经词表投影计算带 NULL 掩码的损失，再逐层手写反向。
+
+        参数在本函数中的角色：
+        - features：按样本排列的视觉特征。
+        - captions：一行一个样本的词编号序列。
+
+        返回表达式：(loss, grads)。
         """
-        Compute training-time loss for the RNN. We input image features and
-        ground-truth captions for those images, and use an RNN (or LSTM) to compute
-        loss and gradients on all parameters.
+        # 将标题切成两块: 标题_ in 包含除最后一个单词以外的所有内容
+        # 并将成为 RNN 的输入。 标题_ out 中除了第一个以外, 什么都有
+        # 单词,这是我们期待的 rNN 生成的。这些被抵消
+        # 由于 RNN应产生单词 (t+1) , 故由单词相对相对 。
+        # 收到t 单词后。 首个标题_ in 的元素将是 START
+        # 符号,且标题_out的第一个元素将是第一个单词.
+        captions_in = captions[:, :-1]  # 每行保留 START 至倒数第二个词，用作教师强制输入。最后一个位置没有下一个目标。
+        captions_out = captions[:, 1:]  # 右移一位得到监督目标；第 t 个输出要预测输入第 t 个词之后的词。
 
-        Inputs:
-        - features: Input image features, of shape (N, D)
-        - captions: Ground-truth captions; an integer array of shape (N, T) where
-          each element is in the range 0 <= y[i, t] < V
+        # 你需要这个
+        mask = (captions_out != self._null)  # 只对实际词和 END 求损失。PAD 位置既不计入损失也不应更新词表投影。
 
-        Returns a tuple of:
-        - loss: Scalar loss
-        - grads: Dictionary of gradients parallel to self.params
-        """
-        # Cut captions into two pieces: captions_in has everything but the last word
-        # and will be input to the RNN; captions_out has everything but the first
-        # word and this is what we will expect the RNN to generate. These are offset
-        # by one relative to each other because the RNN should produce word (t+1)
-        # after receiving word t. The first element of captions_in will be the START
-        # token, and the first element of captions_out will be the first word.
-        captions_in = captions[:, :-1]
-        captions_out = captions[:, 1:]
-
-        # You'll need this
-        mask = (captions_out != self._null)
-
-        # Weight and bias for the affine transform from image features to initial
-        # hidden state
+        # 从图像特性转换到初始特性的重量和偏差
+        # 隐藏状态
         W_proj, b_proj = self.params['W_proj'], self.params['b_proj']
 
-        # Word embedding matrix
+        # 文字嵌入矩阵
         W_embed = self.params['W_embed']
 
-        # Input-to-hidden, hidden-to-hidden, and biases for the RNN
+        # 输入到隐藏、隐藏到隐藏以及 RNN 的偏差
         Wx, Wh, b = self.params['Wx'], self.params['Wh'], self.params['b']
 
-        # Weight and bias for the hidden-to-vocab transformation.
+        # 重量和偏重 隐藏到伏卡布的转变。
         W_vocab, b_vocab = self.params['W_vocab'], self.params['b_vocab']
 
         loss, grads = 0.0, {}
-        ############################################################################
-        # TODO: Implement the forward and backward passes for the CaptioningRNN.   #
-        # In the forward pass you will need to do the following:                   #
-        # (1) Use an affine transformation to compute the initial hidden state     #
-        #     from the image features. This should produce an array of shape (N, H)#
-        # (2) Use a word embedding layer to transform the words in captions_in     #
-        #     from indices to vectors, giving an array of shape (N, T, W).         #
-        # (3) Use either a vanilla RNN or LSTM (depending on self.cell_type) to    #
-        #     process the sequence of input word vectors and produce hidden state  #
-        #     vectors for all timesteps, producing an array of shape (N, T, H).    #
-        # (4) Use a (temporal) affine transformation to compute scores over the    #
-        #     vocabulary at every timestep using the hidden states, giving an      #
-        #     array of shape (N, T, V).                                            #
-        # (5) Use (temporal) softmax to compute loss using captions_out, ignoring  #
-        #     the points where the output word is <NULL> using the mask above.     #
-        #                                                                          #
-        # In the backward pass you will need to compute the gradient of the loss   #
-        # with respect to all model parameters. Use the loss and grads variables   #
-        # defined above to store loss and gradients; grads[k] should give the      #
-        # gradients for self.params[k].                                            #
-        ############################################################################
         # 前向
 
         # 图片特征 -> FC -> h0
@@ -146,7 +102,7 @@ class CaptioningRNN(object):
         # 单词 -> embedding -> X
         x, cache_embed = word_embedding_forward(captions_in, W_embed)
 
-        # (h0, x) -> RNN -> Output
+        # (h0, x) -> RNN -> 输出
         if self.cell_type == 'rnn':
             h, cache_rnn = rnn_forward(x, h0, Wx, Wh, b)
 
@@ -160,79 +116,39 @@ class CaptioningRNN(object):
         loss, dx = temporal_softmax_loss(scores, captions_out, mask)
 
         # 反向
-        # temporal_affine bp
+        # 时间(_A) bp
         dx, grads['W_vocab'], grads['b_vocab'] = temporal_affine_backward(dx, cache_scores)
-        # rnn bp
+        # 韩语bp
         if self.cell_type == 'rnn':
             dx, dh, grads['Wx'], grads['Wh'], grads['b'] = rnn_backward(dx, cache_rnn)
         elif self.cell_type == 'lstm':
             dx, dh, grads['Wx'], grads['Wh'], grads['b'] = lstm_backward(dx, cache_rnn)
-        # word embed bp
+        # 嵌入的单词 bp
         grads['W_embed'] = word_embedding_backward(dx, cache_embed)
-        # affine bp
+        # affine bp( 双亲)
         dh0, grads['W_proj'], grads['b_proj'] = affine_backward(dh, cache_affine)
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
 
         return loss, grads
 
-    # 中文数据流：从图像特征初始化隐藏状态，从 START 开始，逐步嵌入上一预测词、更新 RNN/LSTM 状态并取最大词表得分。输出 token 数组，显示时再截断 END。
+    # 从图像特征初始化隐藏状态，从 START 开始，逐步嵌入上一预测词、更新 RNN/LSTM 状态并取最大词表得分。输出 token 数组，显示时再截断 END。
     def sample(self, features, max_length=30):
-        """
-        Run a test-time forward pass for the model, sampling captions for input
-        feature vectors.
+        """从图像特征初始化隐藏状态，从 START 开始，逐步嵌入上一预测词、更新 RNN/LSTM 状态并取最大词表得分。输出 token 数组，显示时再截断 END。
 
-        At each timestep, we embed the current word, pass it and the previous hidden
-        state to the RNN to get the next hidden state, use the hidden state to get
-        scores for all vocab words, and choose the word with the highest score as
-        the next word. The initial hidden state is computed by applying an affine
-        transform to the input image features, and the initial word is the <START>
-        token.
+        参数在本函数中的角色：
+        - features：按样本排列的视觉特征。
 
-        For LSTMs you will also have to keep track of the cell state; in that case
-        the initial cell state should be zero.
-
-        Inputs:
-        - features: Array of input image features of shape (N, D).
-        - max_length: Maximum length T of generated captions.
-
-        Returns:
-        - captions: Array of shape (N, max_length) giving sampled captions,
-          where each element is an integer in the range [0, V). The first element
-          of captions should be the first sampled word, not the <START> token.
+        返回表达式：captions。
         """
         N = features.shape[0]
         captions = self._null * np.ones((N, max_length), dtype=np.int32)
 
-        # Unpack parameters
+        # 解包参数
         W_proj, b_proj = self.params['W_proj'], self.params['b_proj']
         W_embed = self.params['W_embed']
         Wx, Wh, b = self.params['Wx'], self.params['Wh'], self.params['b']
         W_vocab, b_vocab = self.params['W_vocab'], self.params['b_vocab']
 
-        ###########################################################################
-        # TODO: Implement test-time sampling for the model. You will need to      #
-        # initialize the hidden state of the RNN by applying the learned affine   #
-        # transform to the input image features. The first word that you feed to  #
-        # the RNN should be the <START> token; its value is stored in the         #
-        # variable self._start. At each timestep you will need to do to:          #
-        # (1) Embed the previous word using the learned word embeddings           #
-        # (2) Make an RNN step using the previous hidden state and the embedded   #
-        #     current word to get the next hidden state.                          #
-        # (3) Apply the learned affine transformation to the next hidden state to #
-        #     get scores for all words in the vocabulary                          #
-        # (4) Select the word with the highest score as the next word, writing it #
-        #     to the appropriate slot in the captions variable                    #
-        #                                                                         #
-        # For simplicity, you do not need to stop generating after an <END> token #
-        # is sampled, but you can if you want to.                                 #
-        #                                                                         #
-        # HINT: You will not be able to use the rnn_forward or lstm_forward       #
-        # functions; you'll need to call rnn_step_forward or lstm_step_forward in #
-        # a loop.                                                                 #
-        ###########################################################################
-        # affine hidden state(N,D) -> (N,H)
+        # affine 隐藏状态(N,D) -> (N,H)
         h0, _ = affine_forward(features, W_proj, b_proj)
 
         next_c = np.zeros((N, W_proj.shape[1]))
@@ -251,8 +167,5 @@ class CaptioningRNN(object):
             word_predict = scores.argmax(1)
             captions[:, i] = word_predict
             # 自回归解码必须把本步预测作为下一步输入；不能每步都输入 <START>。
-            word = word_predict
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
+            word = word_predict  # 把刚预测的 token 反馈给下一步的 embedding，避免每个时间步都重复读取 START。
         return captions

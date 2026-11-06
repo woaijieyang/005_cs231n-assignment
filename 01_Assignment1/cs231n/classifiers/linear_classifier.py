@@ -8,130 +8,83 @@ class LinearClassifier(object):
     def __init__(self):
         self.W = None
 
-    # 中文数据流：从 X、y 抽取 mini-batch，调用子类 loss 得到损失和 dW，使用 SGD 迭代更新。输出损失历史，SVM/Softmax 共用该循环但各自定义损失。
+    # 从 X、y 抽取 mini-batch，调用子类 loss 得到损失和 dW，使用 SGD 迭代更新。输出损失历史，SVM/Softmax 共用该循环但各自定义损失。
     def train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=100,
               batch_size=200, verbose=False):
-        """
-        Train this linear classifier using stochastic gradient descent.
+        """从 X、y 抽取 mini-batch，调用子类 loss 得到损失和 dW，使用 SGD 迭代更新。输出损失历史，SVM/Softmax 共用该循环但各自定义损失。
 
-        Inputs:
-        - X: A numpy array of shape (N, D) containing training data; there are N
-          training samples each of dimension D.
-        - y: A numpy array of shape (N,) containing training labels; y[i] = c
-          means that X[i] has label 0 <= c < C for C classes.
-        - learning_rate: (float) learning rate for optimization.
-        - reg: (float) regularization strength.
-        - num_iters: (integer) number of steps to take when optimizing
-        - batch_size: (integer) number of training examples to use at each step.
-        - verbose: (boolean) If true, print progress during optimization.
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
+        - y：每个样本对应的整数类别标签。
+        - learning_rate：每一步参数更新的学习率。
+        - reg：权重正则化强度。
+        - num_iters：更新总次数。
+        - batch_size：每次更新使用的样本数。
 
-        Outputs:
-        A list containing the value of the loss function at each training iteration.
+        返回表达式：loss_history。
         """
         num_train, dim = X.shape
-        num_classes = np.max(y) + 1  # assume y takes values 0...K-1 where K is number of classes
+        num_classes = np.max(y) + 1  # 假设 Y 的值为 0... K-1, K是类数
         if self.W is None:
-            # lazily initialize W
+            # 懒散初始化 W
             self.W = 0.001 * np.random.randn(dim, num_classes)
 
-        # Run stochastic gradient descent to optimize W
+        # 运行斜度下降以优化W
         loss_history = []
         for it in range(num_iters):
             X_batch = None
             y_batch = None
 
-            #########################################################################
-            # TODO:                                                                 #
-            # Sample batch_size elements from the training data and their           #
-            # corresponding labels to use in this round of gradient descent.        #
-            # Store the data in X_batch and their corresponding labels in           #
-            # y_batch; after sampling X_batch should have shape (dim, batch_size)   #
-            # and y_batch should have shape (batch_size,)                           #
-            #                                                                       #
-            # Hint: Use np.random.choice to generate indices. Sampling with         #
-            # replacement is faster than sampling without replacement.              #
-            #########################################################################
             mask = np.random.choice(num_train, batch_size, replace=True)
             X_batch = X[mask]
             y_batch = y[mask]
-            #########################################################################
-            #                       END OF YOUR CODE                                #
-            #########################################################################
 
-            # evaluate loss and gradient
+            # 评估损失和梯度
             loss, grad = self.loss(X_batch, y_batch, reg)
             loss_history.append(loss)
 
-            # perform parameter update
-            #########################################################################
-            # TODO:                                                                 #
-            # Update the weights using the gradient and the learning rate.          #
-            #########################################################################
+            # 执行参数更新
             self.W -= learning_rate * grad
-            #########################################################################
-            #                       END OF YOUR CODE                                #
-            #########################################################################
 
             if verbose and it % 100 == 0:
                 print('iteration %d / %d: loss %f' % (it, num_iters, loss))
 
         return loss_history
 
-    # 中文数据流：对每行样本计算 X@W 并取类别轴最大得分，返回一维预测标签。
+    # 对每行样本计算 X@W 并取类别轴最大得分，返回一维预测标签。
     def predict(self, X):
-        """
-        Use the trained weights of this linear classifier to predict labels for
-        data points.
+        """对每行样本计算 X@W 并取类别轴最大得分，返回一维预测标签。
 
-        Inputs:
-        - X: D x N array of training data. Each column is a D-dimensional point.
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
 
-        Returns:
-        - y_pred: Predicted labels for the data in X. y_pred is a 1-dimensional
-          array of length N, and each element is an integer giving the predicted
-          class.
+        返回表达式：y_pred。
         """
         y_pred = np.zeros(X.shape[1])
-        ###########################################################################
-        # TODO:                                                                   #
-        # Implement this method. Store the predicted labels in y_pred.            #
-        ###########################################################################
         y_pred = np.argmax(X.dot(self.W), axis=1)
-        ###########################################################################
-        #                           END OF YOUR CODE                              #
-        ###########################################################################
         return y_pred
 
-    # 中文数据流：定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
+    # 定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
     def loss(self, X_batch, y_batch, reg):
-        """
-        Compute the loss function and its derivative.
-        Subclasses will override this.
+        """定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
 
-        Inputs:
-        - X_batch: A numpy array of shape (N, D) containing a minibatch of N
-          data points; each point has dimension D.
-        - y_batch: A numpy array of shape (N,) containing labels for the minibatch.
-        - reg: (float) regularization strength.
-
-        Returns: A tuple containing:
-        - loss as a single float
-        - gradient with respect to self.W; an array of the same shape as W
+        参数在本函数中的角色：
+        - reg：权重正则化强度。
         """
         pass
 
 
 class LinearSVM(LinearClassifier):
-    """ A subclass that uses the Multiclass SVM loss function """
+    """线性分类器的 SVM 实现。继承公共 SGD 训练过程，使用多类 hinge 损失计算参数梯度。"""
 
-    # 中文数据流：定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
+    # 定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
     def loss(self, X_batch, y_batch, reg):
         return svm_loss_vectorized(self.W, X_batch, y_batch, reg)
 
 
 class Softmax(LinearClassifier):
-    """ A subclass that uses the Softmax + Cross-entropy loss function """
+    """线性分类器的 Softmax 实现。继承公共 SGD 训练过程，使用交叉熵计算参数梯度。"""
 
-    # 中文数据流：定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
+    # 定义具体分类器的损失入口：子类把当前 W、批次样本、标签与正则参数传给对应 SVM 或 Softmax 实现。
     def loss(self, X_batch, y_batch, reg):
         return softmax_loss_vectorized(self.W, X_batch, y_batch, reg)

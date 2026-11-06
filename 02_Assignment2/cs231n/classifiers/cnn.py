@@ -7,48 +7,21 @@ from cs231n.layer_utils import *
 
 
 class ThreeLayerConvNet(object):
-    """
-    A three-layer convolutional network with the following architecture:
+    """三层卷积分类器。卷积、ReLU 和最大池化提取空间特征，随后经过仿射隐藏层与最终分类层。模型接收 NCHW 图像，返回类别得分或训练损失与梯度。"""
 
-    conv - relu - 2x2 max pool - affine - relu - affine - softmax
-
-    The network operates on minibatches of data that have shape (N, C, H, W)
-    consisting of N images, each with height H and width W and with C input
-    channels.
-    """
-
-    # 中文数据流：按卷积→ReLU→2×2 池化→仿射→ReLU→仿射建立参数。池化后通道和空间尺寸决定第一全连接权重的行数。
+    # 按卷积→ReLU→2×2 池化→仿射→ReLU→仿射建立参数。池化后通道和空间尺寸决定第一全连接权重的行数。
     def __init__(self, input_dim=(3, 32, 32), num_filters=32, filter_size=7,
                  hidden_dim=100, num_classes=10, weight_scale=1e-3, reg=0.0,
                  dtype=np.float32):
-        """
-        Initialize a new network.
+        """按卷积→ReLU→2×2 池化→仿射→ReLU→仿射建立参数。池化后通道和空间尺寸决定第一全连接权重的行数。
 
-        Inputs:
-        - input_dim: Tuple (C, H, W) giving size of input data
-        - num_filters: Number of filters to use in the convolutional layer
-        - filter_size: Size of filters to use in the convolutional layer
-        - hidden_dim: Number of units to use in the fully-connected hidden layer
-        - num_classes: Number of scores to produce from the final affine layer.
-        - weight_scale: Scalar giving standard deviation for random initialization
-          of weights.
-        - reg: Scalar giving L2 regularization strength
-        - dtype: numpy datatype to use for computation.
+        参数在本函数中的角色：
+        - reg：权重正则化强度。
         """
         self.params = {}
         self.reg = reg
         self.dtype = dtype
 
-        ############################################################################
-        # TODO: Initialize weights and biases for the three-layer convolutional    #
-        # network. Weights should be initialized from a Gaussian with standard     #
-        # deviation equal to weight_scale; biases should be initialized to zero.   #
-        # All weights and biases should be stored in the dictionary self.params.   #
-        # Store weights and biases for the convolutional layer using the keys 'W1' #
-        # and 'b1'; use keys 'W2' and 'b2' for the weights and biases of the       #
-        # hidden affine layer, and keys 'W3' and 'b3' for the weights and biases   #
-        # of the output affine layer.                                              #
-        ############################################################################
         # pad参看loss函数的预设
         pad = (filter_size - 1) // 2
         # 卷积后的输出大小
@@ -57,7 +30,7 @@ class ThreeLayerConvNet(object):
         # 池化后的输出大小
         H_pool = 1 + (H_conv - 2) / 2
         W_pool = 1 + (W_conv - 2) / 2
-        # conv - relu - 2x2 max pool
+        # 凸轮 - relu - 2x2 最大池
         # W1实现卷积
         self.params['W1'] = np.random.normal(0, weight_scale,
                                              size=(num_filters, input_dim[0],
@@ -69,44 +42,39 @@ class ThreeLayerConvNet(object):
                                              size=(num_filters * int(H_pool * W_pool),
                                                    hidden_dim))
         self.params['b2'] = np.zeros(hidden_dim)
-        # affine - softmax
+        # affine - Softmax
         # W3实现评分函数
         self.params['W3'] = np.random.normal(0, weight_scale,
                                              size=(hidden_dim, num_classes))
         self.params['b3'] = np.zeros(num_classes)
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
 
         for k, v in self.params.items():
             self.params[k] = v.astype(dtype)
 
-    # 中文数据流：依次调用组合层进行前向，无标签时返回 logits；有标签时计算 Softmax 和仅作用于权重的 L2 正则，逆序返回 W1/b1 到 W3/b3 的梯度。
+    # 依次调用组合层进行前向，无标签时返回 logits；有标签时计算 Softmax 和仅作用于权重的 L2 正则，逆序返回 W1/b1 到 W3/b3 的梯度。
     def loss(self, X, y=None):
-        """
-        Evaluate loss and gradient for the three-layer convolutional network.
+        """依次调用组合层进行前向，无标签时返回 logits；有标签时计算 Softmax 和仅作用于权重的 L2 正则，逆序返回 W1/b1 到 W3/b3 的梯度。
 
-        Input / output: Same API as TwoLayerNet in fc_net.py.
+        参数在本函数中的角色：
+        - X：输入样本矩阵或图像批次。
+        - y：每个样本对应的整数类别标签。
+
+        返回表达式：(loss, grads)；scores。
         """
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
         W3, b3 = self.params['W3'], self.params['b3']
 
-        # pass conv_param to the forward pass for the convolutional layer
+        # 向前进方向通过凸起层 。
         filter_size = W1.shape[2]
         conv_param = {'stride': 1, 'pad': (filter_size - 1) // 2}
 
-        # pass pool_param to the forward pass for the max-pooling layer
+        # 最大集合层通过球池_参数到前传
         pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
 
         scores = None
-        ############################################################################
-        # TODO: Implement the forward pass for the three-layer convolutional net,  #
-        # computing the class scores for X and storing them in the scores          #
-        # variable.                                                                #
-        ############################################################################
         # 前向传递
-        # conv - relu - 2x2 max pool
+        # 凸轮 - relu - 2x2 最大池
         scores, cache1 = conv_relu_pool_forward(X, self.params['W1'],
                                                 self.params['b1'],
                                                 conv_param,
@@ -115,24 +83,15 @@ class ThreeLayerConvNet(object):
         scores, cache2 = affine_relu_forward(scores,
                                              self.params['W2'],
                                              self.params['b2'])
-        # affine - softmax
+        # affine - Softmax
         scores, cache3 = affine_forward(scores,
                                         self.params['W3'],
                                         self.params['b3'])
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
 
         if y is None:
             return scores
 
         loss, grads = 0, {}
-        ############################################################################
-        # TODO: Implement the backward pass for the three-layer convolutional net, #
-        # storing the loss and gradients in the loss and grads variables. Compute  #
-        # data loss using softmax, and make sure that grads[k] holds the gradients #
-        # for self.params[k]. Don't forget to add L2 regularization!               #
-        ############################################################################
         loss, dx = softmax_loss(scores, y)
         loss += 0.5 * self.reg * (np.sum(W1 ** 2) + np.sum(W2 ** 2) +
                                   np.sum(W3 ** 2))
@@ -148,8 +107,5 @@ class ThreeLayerConvNet(object):
         dx, dw1, db1 = conv_relu_pool_backward(dx, cache1)
         grads['W1'] = dw1 + self.reg * W1
         grads['b1'] = db1
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
 
         return loss, grads

@@ -3,30 +3,17 @@ import numpy as np
 from scipy.ndimage import uniform_filter
 
 
-# 中文数据流：按图像逐一调用给定特征函数，先推导各段长度，再把 HOG/颜色等向量拼到固定列区间。输出 N×总特征维数，不能把不同图像的段顺序打乱。
+# 按图像逐一调用给定特征函数，先推导各段长度，再把 HOG/颜色等向量拼到固定列区间。输出 N×总特征维数，不能把不同图像的段顺序打乱。
 def extract_features(imgs, feature_fns, verbose=False):
-    """
-    Given pixel data for images and several feature functions that can operate on
-    single images, apply all feature functions to all images, concatenating the
-    feature vectors for each image and storing the features for all images in
-    a single matrix.
+    """按图像逐一调用给定特征函数，先推导各段长度，再把 HOG/颜色等向量拼到固定列区间。输出 N×总特征维数，不能把不同图像的段顺序打乱。
 
-    Inputs:
-    - imgs: N x H X W X C array of pixel data for N images.
-    - feature_fns: List of k feature functions. The ith feature function should
-      take as input an H x W x D array and return a (one-dimensional) array of
-      length F_i.
-    - verbose: Boolean; if true, print progress.
-
-    Returns:
-    An array of shape (N, F_1 + ... + F_k) where each column is the concatenation
-    of all features for a single image.
+    返回表达式：imgs_features；np.array([])。
     """
     num_images = imgs.shape[0]
     if num_images == 0:
         return np.array([])
 
-    # Use the first image to determine feature dimensions
+    # 使用第一个图像来确定特征尺寸
     feature_dims = []
     first_image_features = []
     for feature_fn in feature_fns:
@@ -35,13 +22,13 @@ def extract_features(imgs, feature_fns, verbose=False):
         feature_dims.append(feats.size)
         first_image_features.append(feats)
 
-    # Now that we know the dimensions of the features, we can allocate a single
-    # big array to store all features as columns.
+    # 现在我们知道这些特征的维度,我们可以分配一个单一的
+    # 大阵列将所有特性作为列存储。
     total_feature_dim = sum(feature_dims)
     imgs_features = np.zeros((num_images, total_feature_dim))
     imgs_features[0] = np.hstack(first_image_features).T
 
-    # Extract features for the rest of the images.
+    # 提取其它图像的特性 。
     for i in range(1, num_images):
         idx = 0
         for feature_fn, feature_dim in zip(feature_fns, feature_dims):
@@ -54,68 +41,51 @@ def extract_features(imgs, feature_fns, verbose=False):
     return imgs_features
 
 
-# 中文数据流：沿最后 RGB 轴加权求和得到灰度二维图。本仓库保留原权重用于忠实运行验证，HOG 的所有实验采用同一函数，不单独修改测试集变换。
+# 沿最后 RGB 轴加权求和得到灰度二维图。本仓库保留原权重用于忠实运行验证，HOG 的所有实验采用同一函数，不单独修改测试集变换。
 def rgb2gray(rgb):
-    """Convert RGB image to grayscale
+    """沿最后 RGB 轴加权求和得到灰度二维图。本仓库保留原权重用于忠实运行验证，HOG 的所有实验采用同一函数，不单独修改测试集变换。
 
-      Parameters:
-        rgb : RGB image
-
-      Returns:
-        gray : grayscale image
-
+    返回表达式：np.dot(rgb[..., :3], [0.299, 0.587, 0.144])。
     """
     return np.dot(rgb[..., :3], [0.299, 0.587, 0.144])
 
 
-# 中文数据流：计算水平/垂直像素差形成梯度幅值与方向，按九个方向箱与 8×8 空间单元聚合。32×32 图像输出 4×4×9=144 维方向特征。
+# 计算水平/垂直像素差形成梯度幅值与方向，按九个方向箱与 8×8 空间单元聚合。32×32 图像输出 4×4×9=144 维方向特征。
 def hog_feature(im):
-    """Compute Histogram of Gradient (HOG) feature for an image
+    """计算水平/垂直像素差形成梯度幅值与方向，按九个方向箱与 8×8 空间单元聚合。32×32 图像输出 4×4×9=144 维方向特征。
 
-         Modified from skimage.feature.hog
-         http://pydoc.net/Python/scikits-image/0.4.2/skimage.feature.hog
-
-       Reference:
-         Histograms of Oriented Gradients for Human Detection
-         Navneet Dalal and Bill Triggs, CVPR 2005
-
-      Parameters:
-        im : an input grayscale or rgb image
-
-      Returns:
-        feat: Histogram of Gradient (HOG) feature
-
+    返回表达式：orientation_histogram.ravel()。
     """
 
-    # convert rgb to grayscale if needed
+    # 需要时将 rgb 转换为灰度
     if im.ndim == 3:
         image = rgb2gray(im)
     else:
         image = np.at_least_2d(im)
 
-    sx, sy = image.shape  # image size
-    orientations = 9  # number of gradient bins
-    cx, cy = (8, 8)  # pixels per cell
+    sx, sy = image.shape  # 图像大小
+    orientations = 9  # 梯度插件数
+    cx, cy = (8, 8)  # 每个单元格的像素
 
     gx = np.zeros(image.shape)
     gy = np.zeros(image.shape)
-    gx[:, :-1] = np.diff(image, n=1, axis=1)  # compute gradient on x-direction
-    gy[:-1, :] = np.diff(image, n=1, axis=0)  # compute gradient on y-direction
-    grad_mag = np.sqrt(gx ** 2 + gy ** 2)  # gradient magnitude
-    grad_ori = np.arctan2(gy, (gx + 1e-15)) * (180 / np.pi) + 90  # gradient orientation
+    gx[:, :-1] = np.diff(image, n=1, axis=1)  # 在 x 方向上计算梯度
+    gy[:-1, :] = np.diff(image, n=1, axis=0)  # 在 Y 方向上计算梯度
+    grad_mag = np.sqrt(gx ** 2 + gy ** 2)  # 梯度
+    grad_ori = np.arctan2(gy, (gx + 1e-15)) * (180 / np.pi) + 90  # 渐变方向
 
-    n_cellsx = int(np.floor(sx / cx))  # number of cells in x
-    n_cellsy = int(np.floor(sy / cy))  # number of cells in y
-    # compute orientations integral images
+    n_cellsx = int(np.floor(sx / cx))  # x 中的单元格数
+    n_cellsy = int(np.floor(sy / cy))  # y 中的单元格数
+    # 计算方向集成图像
     orientation_histogram = np.zeros((n_cellsx, n_cellsy, orientations))
     for i in range(orientations):
-        # create new integral image for this orientation
-        # isolate orientations in this range
+        # 为此方向创建新整体图像
+        # 在此范围内隔离方向
         temp_ori = np.where(grad_ori < 180 / orientations * (i + 1),
                             grad_ori, 0)
         temp_ori = np.where(grad_ori >= 180 / orientations * i,
                             temp_ori, 0)
-        # select magnitudes for those orientations
+        # 选择这些方向的大小
         cond2 = temp_ori > 0
         temp_mag = np.where(cond2, grad_mag, 0)
         orientation_histogram[:, :, i] = uniform_filter(temp_mag, size=(cx, cy))[cx // 2::cx, cy // 2::cy].T
@@ -123,21 +93,11 @@ def hog_feature(im):
     return orientation_histogram.ravel()
 
 
-# 中文数据流：先把 RGB 转 HSV，取色相通道按给定箱数统计直方图。返回固定长度颜色分布特征，不保留像素空间位置。
+# 先把 RGB 转 HSV，取色相通道按给定箱数统计直方图。返回固定长度颜色分布特征，不保留像素空间位置。
 def color_histogram_hsv(im, nbin=10, xmin=0, xmax=255, normalized=True):
-    """
-    Compute color histogram for an image using hue.
+    """先把 RGB 转 HSV，取色相通道按给定箱数统计直方图。返回固定长度颜色分布特征，不保留像素空间位置。
 
-    Inputs:
-    - im: H x W x C array of pixel data for an RGB image.
-    - nbin: Number of histogram bins. (default: 10)
-    - xmin: Minimum pixel value (default: 0)
-    - xmax: Maximum pixel value (default: 255)
-    - normalized: Whether to normalize the histogram (default: True)
-
-    Returns:
-      1D vector of length nbin giving the color histogram over the hue of the
-      input image.
+    返回表达式：imhist。
     """
     ndim = im.ndim
     bins = np.linspace(xmin, xmax, nbin + 1)
@@ -145,7 +105,7 @@ def color_histogram_hsv(im, nbin=10, xmin=0, xmax=255, normalized=True):
     imhist, bin_edges = np.histogram(hsv[:, :, 0], bins=bins, density=normalized)
     imhist = imhist * np.diff(bin_edges)
 
-    # return histogram
+    # 返回直方图
     return imhist
 
 
